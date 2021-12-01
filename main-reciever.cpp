@@ -26,9 +26,13 @@
 // declare an SSD1306 display object connected to I2C
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-const char *ssid = "esp-12f";
+const char *ssid = "a-esp-12f";
 
 ESP8266WebServer server(80);
+IPAddress local_ip(192,168,4,1);
+IPAddress gateway(192,168,4,1);
+IPAddress netmask(255,255,255,0);
+
 
 void handleIndex() {
   Serial.println("got request");
@@ -62,9 +66,9 @@ void setup() {
   Serial.println("setting AP...");
   WiFi.softAP(ssid);
 
-  IPAddress ip = WiFi.softAPIP();
+  WiFi.softAPConfig(local_ip, gateway, netmask);
   Serial.print("AP IP address: ");
-  Serial.println(ip);
+  Serial.println(local_ip);
 
 
   //MDNS.begin("esp8266");
