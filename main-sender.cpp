@@ -32,48 +32,67 @@ WiFiClient wc = WiFiClient();
 IPAddress server(192,168,4,1);
 int port = 80;
 
-
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(74880);
-
+void init_oled() {
   // initialize OLED display with address 0x3C for 128x64
   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("SSD1306 allocation failed"));
     while (true);
   }
+  
+  // init OLED
+  oled.clearDisplay(); 
+  oled.setTextSize(1);
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 0);
+}
 
-  Serial.println("Connecting to ssid: " + String(ssid));
+void putln(String s) {
+  Serial.println(s);
+  oled.setCursor(0, 0);
+  oled.clearDisplay();
+  oled.println(s);
+  oled.display();
+}
+
+void put(String s) {
+  Serial.print(s);
+  oled.print(s);
+  oled.display();
+}
+
+void debug(String s,int n) {
+  Serial.println(s+": "+String(n));
+}
+
+void debug(String s) {
+  Serial.println(s);
+}
+
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  Serial.begin(74880);
+
+  init_oled();
+
+  putln("Connecting to ssid: \n" + String(ssid));
   WiFi.begin(ssid);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
+    put(".");
   }
-  Serial.println("\nWiFi connected successfully to ssid: " + String(ssid));
-  Serial.println("The IP Address of this module is "+WiFi.localIP().toString());
 
-  Serial.println("Connecting to server "+server.toString()+" on port "+String(port));
+  debug("\nWiFi connected successfully to ssid: "+String(ssid));
+  putln("The IP Address of this module is: \n"+WiFi.localIP().toString());
+
+  debug("Connecting to server "+server.toString()+" on port",port);
   if (wc.connect(server,port)) {
-    Serial.println("Connected!");
-    delay(2000);         // wait for initializing
-    oled.clearDisplay(); // clear display
-    oled.setTextSize(1);          // text size
-    oled.setTextColor(WHITE);     // text color
-    oled.setCursor(0, 0);        // position to display
-    oled.println("I am a sender!"); // text to display
-    oled.display();               // show on OLED
+    delay(5000);
+    putln("Connected!"); // wait for initializing
   }
   else {
-    Serial.println("Connection failed.");
-    delay(2000);         // wait for initializing
-    oled.clearDisplay(); // clear display
-
-    oled.setTextSize(1);          // text size
-    oled.setTextColor(WHITE);     // text color
-    oled.setCursor(0, 0);        // position to display
-    oled.println("Connection failed."); // text to display
-    oled.display();               // show o
+    putln("Connection failed.");
+    for(;;);
   }
 }
 
@@ -87,15 +106,10 @@ void loop() {
     String message = "Message number "+String(i);
     int http_code = http.POST(message);
     String response = http.getString();
-    Serial.println("Message = "+message+", http code = "+String(http_code)+", response = "+response);
-    oled.clearDisplay(); // clear display
-
-    oled.setTextSize(1);          // text size
-    oled.setTextColor(WHITE);     // text color
-    oled.setCursor(0, 0);        // position to display
-    oled.println("I am a sender! ("+String(i)+")"); // text to display
-    oled.println("Response is "+String(http_code)+"!"); // text to display
-    oled.display();               // show o
+    debug("Message = "+message+", http code = "+String(http_code)+", response = "+response);
+    putln("I sent: \n"+message);
+    put("Server responded:\n");
+    put(response+" ("+String(http_code)+")");
     digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on
     delay(5000);
     digitalWrite(LED_BUILTIN, LOW);    // turn the LED off

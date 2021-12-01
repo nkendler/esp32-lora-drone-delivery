@@ -33,59 +33,71 @@ IPAddress local_ip(192,168,4,1);
 IPAddress gateway(192,168,4,1);
 IPAddress netmask(255,255,255,0);
 
+void init_oled() {
+  // initialize OLED display with address 0x3C for 128x64
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    while (true);
+  }
+  
+  // init OLED
+  oled.clearDisplay(); 
+  oled.setTextSize(1);
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 0);
+}
+
+void putln(String s) {
+  Serial.println(s);
+  oled.setCursor(0, 0);
+  oled.clearDisplay();
+  oled.println(s);
+  oled.display();
+}
+
+void put(String s) {
+  Serial.print(s);
+  oled.print(s);
+  oled.display();
+}
+
+void debug(String s,int n) {
+  Serial.println(s+": "+String(n));
+}
+
+void debug(String s) {
+  Serial.println(s);
+}
 
 void handleIndex() {
-  Serial.println("got request");
-
   if (server.hasArg("plain")) {
     String body = server.arg("plain");
-    Serial.printf("got request: %s\n", body);
-    oled.clearDisplay();
-    oled.setTextSize(1);          // text size
-    oled.setTextColor(WHITE);     // text color
-    oled.setCursor(0, 0);        // position to display
-    oled.println(body); // text to display
-    oled.display();               // show on OLED
+    putln("Got request: \n"+body);
+    server.send(200, "text/plain", "Acknowledge "+body);
   } else {
-    server.send(200, "text/plain", "no body");
+    server.send(400, "text/plain", "Message body empty.");
   }
-
-  server.send(200, "text/plain", "printed to oled");
 }
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(74880);
 
-  // initialize OLED display with address 0x3C for 128x64
-  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    while (true);
-  }
+  init_oled();
 
-  Serial.println("setting AP...");
+  putln("Setting AP...");
   WiFi.softAP(ssid);
 
-  WiFi.softAPConfig(local_ip, gateway, netmask);
-  Serial.print("AP IP address: ");
-  Serial.println(local_ip);
+  //WiFi.softAPConfig(local_ip, gateway, netmask);
+  putln("AP IP address: ");
+  put(local_ip.toString()+"\n");
 
-
-  //MDNS.begin("esp8266");
-
+  // handle requests
   server.on("/", handleIndex);
   server.onNotFound(handleIndex);
   server.begin();
-  //MDNS.addService("http", "tcp", 80);
 
-  delay(2000);         // wait for initializing
-  oled.clearDisplay(); // clear display
-
-  oled.setTextSize(1);          // text size
-  oled.setTextColor(WHITE);     // text color
-  oled.setCursor(0, 0);        // position to display
-  oled.println("Fuck You!"); // text to display
-  oled.display();               // show on OLED
+  delay(2000);
 }
 
 void loop() {
