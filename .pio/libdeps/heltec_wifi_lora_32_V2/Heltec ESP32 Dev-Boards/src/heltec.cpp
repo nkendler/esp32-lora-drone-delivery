@@ -99,10 +99,6 @@ void Heltec_ESP32::begin(bool DisplayEnable, bool LoRaEnable, bool SerialEnable,
 			display->drawString(0, 0, "LoRa Initial success!");
 			display->display();
 			delay(300);
-			display->clear();
-			display->drawString(0, 0, "Your mom sucks toes!");
-			display->display();
-			delay(300);
 		}
 #endif
 

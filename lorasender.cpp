@@ -8,22 +8,25 @@
   this project also realess in GitHub:
   https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series
 */
+#include "Arduino.h"
 #include "heltec.h"
+
+//#include "heltecv2.h"
 #define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
 
 int counter = 0;
 
 void setup() {
-  
   //WIFI Kit series V1 not support Vext control
   Heltec.begin(true /*DisplayEnable Enable*/, true /*Heltec.LoRa Disable*/, true /*Serial Enable*/, true /*PABOOST Enable*/, BAND /*long BAND*/);
-
-  
+  Serial.println(int(Heltec.display));
+  Heltec.DisplayText("First Line of Text");
+  Serial.println("Cleared Display");
 }
 
 void loop() {
-  Serial.print("Sending packet: ");
-  Serial.println(counter);
+  Heltec.DisplayText("Sending packet: " + String(counter));
+	delay(300);
   // send packet
   LoRa.beginPacket();
 /*
