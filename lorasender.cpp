@@ -11,6 +11,8 @@
 #include "Arduino.h"
 #include "heltec.h"
 
+//on lisa's mac - port /dev/cu.usbserial-6
+
 //#include "heltecv2.h"
 #define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
 
@@ -37,7 +39,7 @@ void loop() {
 *   - RF_PACONFIG_PASELECT_RFO     -- LoRa single output via RFO_HF / RFO_LF, maximum output 14dBm
 */
   LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
-  LoRa.print("hello ");
+  //LoRa.print("hello ");
   LoRa.print(counter);
   LoRa.endPacket();
   

@@ -8,8 +8,10 @@
   this project also realess in GitHub:
   https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series
 */
-
+#include "Arduino.h"
 #include "heltec.h"
+
+//on lisa's mac - port /dev/cu.usbserial-0001
 
 #define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
 void setup() {
@@ -19,17 +21,27 @@ void setup() {
 }
 
 void loop() {
+  String packetinfo;
   // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
-    Serial.print("Received packet '");
+    packetinfo = "Received packet: \n";
     // read packet
     while (LoRa.available()) {
-      Serial.print((char)LoRa.read());
+      packetinfo += String((char)LoRa.read()) + "\n";
     }
     // print RSSI of packet
-    Serial.print("' with RSSI ");
-    Serial.println(LoRa.packetRssi());
+    packetinfo += "with RSSI ";
+    packetinfo += String(LoRa.packetRssi());
+    Heltec.DisplayText(packetinfo);
   }
+  /*else {
+    Heltec.DisplayText("No Packet Detected....");
+  }*/
+
+  digitalWrite(25, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(300);                       // wait for a second
+  digitalWrite(25, LOW);    // turn the LED off by making the voltage LOW
+  delay(300);  
 }
