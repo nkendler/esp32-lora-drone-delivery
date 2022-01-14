@@ -1,0 +1,19 @@
+key - diffie-hellman
+
+1. 
+Sender and Receiver publicly agree to use a module p = 23 and base g = 5
+
+2.
+Sender and Receiver each choose a secret integer (s for sender, r for receiver)
+
+3.
+Sender chooses s = 4 and sends receiver S = (g^s) mod p = (5^4) mod 23 = 4
+Receiver chooses r = 3 and sends sender R = (g^r) mod p = (5^3) mod 23 = 10
+
+4. 
+Sender computes shared key k = (R^s) mod p = (10^4) mod 23 = 18
+Receiver computes shared key k = (S^r) mod p = (4 ^ 3) mod 23 = 18
+
+encryption
+
+
