@@ -21,27 +21,63 @@ void setup() {
 }
 
 void loop() {
-  String packetinfo;
-  // try to parse packet
   int packetSize = LoRa.parsePacket();
-  if (packetSize) {
-    // received a packet
-    packetinfo = "Received packet: \n";
-    // read packet
-    while (LoRa.available()) {
-      packetinfo += String((char)LoRa.read()) + "\n";
-    }
-    // print RSSI of packet
-    packetinfo += "with RSSI ";
-    packetinfo += String(LoRa.packetRssi());
-    Heltec.DisplayText(packetinfo);
-  }
-  /*else {
-    Heltec.DisplayText("No Packet Detected....");
-  }*/
+  String printinfo;
+  String packet;
+  String send;
+  printinfo = "I am the drone station!\n Waiting for a connection\n";
 
-  digitalWrite(25, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(300);                       // wait for a second
-  digitalWrite(25, LOW);    // turn the LED off by making the voltage LOW
-  delay(300);  
+  int p = 23, g = 5, r = 3; //diffie-hellman values. see documentation/security-notes
+  int k; //shared (secret) key
+  int S;
+
+  Heltec.DisplayText(printinfo);
+
+  while (!packetSize) {
+    //wait for sender to initiate contact
+    delay(300); 
+    //wait and try to get another packet
+    packetSize = LoRa.parsePacket();
+  }
+
+  //should have received first packet (S)
+  while (LoRa.available()) {
+      packet += String((char)LoRa.read());
+  }
+
+  printinfo = "I am the drone station! \nGot value: \n" + packet;
+  Heltec.DisplayText(printinfo);
+
+  //send S
+  send = String(((int)pow(g,r)) % p);
+  LoRa.beginPacket();
+  LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
+  LoRa.print(send);
+  LoRa.endPacket();
+
+  S = packet.toInt();
+  k = ((int)pow(S,r)) % p;
+
+  printinfo = "I am the drone station! \nSecured connection established\n";
+  printinfo += "Shared key: " + String(k);
+  Heltec.DisplayText(printinfo);
+	delay(300);
+
+  while (1) {
+    packetSize = LoRa.parsePacket();
+
+    if (packetSize) {
+      // received a packet
+      printinfo = "I am the drone station! \nReceived packet: \n";
+      // read packet
+      while (LoRa.available()) {
+        printinfo += String((char)LoRa.read());
+      }
+      // print RSSI of packet
+      printinfo += "\nwith RSSI ";
+      printinfo += String(LoRa.packetRssi());
+      Heltec.DisplayText(printinfo);
+    }
+    delay(300);
+  }
 }
