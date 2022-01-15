@@ -17,3 +17,21 @@ Receiver computes shared key k = (S^r) mod p = (4 ^ 3) mod 23 = 18
 encryption
 
 
+notes - additional
+
+base station (sender) 
+sends: S
+has: p, g, s
+receives: R
+
+
+drone station (receiver)
+sends: R
+has: p, g, r
+receives: S
+
+
+base station -06
+drone station -01
+
+

@@ -1,17 +1,14 @@
 /* 
-  Check the new incoming messages, and print via serialin 115200 baud rate.
-  
-  by Aaron.Lee from HelTec AutoMation, ChengDu, China
-  成都惠利特自动化科技有限公司
-  www.heltec.cn
-  
-  this project also realess in GitHub:
-  https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series
+  Receiver code.
+
+  Authentication using diffie-hellman key exchange.
+  Encryption TBD.
 */
 #include "Arduino.h"
 #include "heltec.h"
 
 //on lisa's mac - port /dev/cu.usbserial-0001
+
 
 #define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
 void setup() {
@@ -24,17 +21,17 @@ void loop() {
   int packetSize = LoRa.parsePacket();
   String printinfo;
   String packet;
-  String send;
+  String send; //send R
   printinfo = "I am the drone station!\n Waiting for a connection\n";
 
   int p = 23, g = 5, r = 3; //diffie-hellman values. see documentation/security-notes
   int k; //shared (secret) key
-  int S;
+  int S; //receiving
 
   Heltec.DisplayText(printinfo);
 
+  //first loop - wait for sender to initiate contact by sending packet S
   while (!packetSize) {
-    //wait for sender to initiate contact
     delay(300); 
     //wait and try to get another packet
     packetSize = LoRa.parsePacket();
@@ -50,15 +47,19 @@ void loop() {
 
   //send S
   send = String(((int)pow(g,r)) % p);
-  LoRa.beginPacket();
   LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
-  LoRa.print(send);
-  LoRa.endPacket();
+  
+  for (int i = 0; i < 5; i++) {
+    LoRa.beginPacket();  
+    LoRa.print(send);
+    LoRa.endPacket();
+    delay(100);
+  }
 
   S = packet.toInt();
   k = ((int)pow(S,r)) % p;
 
-  printinfo = "I am the drone station! \nSecured connection established\n";
+  printinfo = "I am the drone station! \nSecured connection \nestablished\n";
   printinfo += "Shared key: " + String(k);
   Heltec.DisplayText(printinfo);
 	delay(300);
