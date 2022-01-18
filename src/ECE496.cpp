@@ -145,6 +145,17 @@ void ECE496::awaitPacket()
     }
 }
 
+// wait for a packet to arrive and then exit
+void ECE496::awaitPacketUntil(unsigned long timeout)
+{
+    unsigned long init = millis();
+    while (millis() - init < timeout)
+    {
+        if (LoRa.parsePacket())
+            break;
+    }
+}
+
 // advertise this device to other devices and exit when another device says hello
 void ECE496::advertiseConnection()
 {
@@ -242,7 +253,19 @@ void ECE496::initSession(bool sender)
         // recieve IV/Nonce from sender to be used in our ChaCha20
         awaitPacket();
         recieveClear(IV, IV_SIZE);
+        logHex("IV: ", IV, IV_SIZE);
     }
     chacha.setIV(IV, IV_SIZE);
-    logHex("IV: ", IV, IV_SIZE);
+}
+
+// destroys all cryptographically-sensitive information from the session
+void ECE496::closeSession()
+{
+    sender = false;
+    chacha.clear();
+    memset(IV, 0, IV_SIZE);
+    memset(f_publicKey, 0, KEY_SIZE);
+    memset(sharedKey, 0, KEY_SIZE);
+    memset(publicKey, 0, KEY_SIZE);
+    memset(privateKey, 0, KEY_SIZE);
 }
