@@ -5,94 +5,278 @@
   Encryption TBD.
   
 */
+#define ESP32 1
+
 #include "Arduino.h"
 #include "heltec.h"
+#include <Curve25519.h>
+#include <RNG.h>
+#include "esp_wifi.h"
+#include <ChaCha.h>
 
 //on lisa's mac - port /dev/cu.usbserial-6
 
-//#include "heltecv2.h"
-#define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
+#define IV_SIZE 8
+uint8_t IV[IV_SIZE];
+
+#define KEY_SIZE 32
+uint8_t noise[32];
+
+uint8_t publicKey[KEY_SIZE];  // our public key
+uint8_t privateKey[KEY_SIZE]; // our private key
+
+uint8_t f_publicKey[KEY_SIZE]; // foreign public key
+uint8_t sharedKey[KEY_SIZE];   // shared secret
+
+// encryption core
+ChaCha chacha = ChaCha();
+
+#define DEBUG 1
+#define BAND 915E6
 
 int counter = 0;
-bool receivedmsg = false;
-void setReceive(int packetSize);
 
-void setup() {
-  //WIFI Kit series V1 not support Vext control
-  Heltec.begin(true /*DisplayEnable Enable*/, true /*Heltec.LoRa Disable*/, true /*Serial Enable*/, true /*PABOOST Enable*/, BAND /*long BAND*/);
-}
+void recieveHandler(int packetSize);
+void updateNoise();
+void initSession();
+void advertiseConnection();
+void awaitPacket();
+String recievePacket();
+void recieveKey();
+void sendKey();
+void sendPacket(String s);
+void displayText(String s);
+void generateSecret();
+void logHex(String n, uint8_t *s);
+void generateKeys();
+void generateIV();
+void sendClear(uint8_t *buf, size_t size);
+void sendCipher(uint8_t *buf, size_t size);
+void encrypt(uint8_t *input, size_t size);
+void decrypt(uint8_t *input, size_t size);
+void recieveClear(uint8_t *buf, size_t size);
+void recieveCipher(uint8_t *buf, size_t size);
 
-void loop() {
-  int packetSize = LoRa.parsePacket();
-  String printinfo;
-  String packet;
-  String send; //send S
-  printinfo = "I am the base station! \nWaiting to connect \nto a drone\n";
+void setup()
+{
+  Heltec.begin(true, true, true, true, BAND);
 
-  int p = 23, g = 5, s = 4; //diffie-hellman values. see documentation/security-notes
-  int k; //shared (secret) key
-  int R; //receiving
-
-  Heltec.DisplayText(printinfo);
-  send = String(((int)pow(g,s)) % p);
-
-  //first while loop - trying to connect to receiver
-  //by sending a packet and waiting for a reply
-
-  //wait for packet received and interrupt loop
-  //LoRa.onReceive(setReceive);
-  //LoRa.receive();
-  
-  //LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
-
-  //while (!receivedmsg) {
-  while (1) {
-    delay(1000);
-    packetSize = LoRa.parsePacket();
-    if (packetSize != 0) break;
-    //send packet S
-    LoRa.beginPacket();
-    LoRa.print(send);
-    LoRa.endPacket();
-    //wait and try to get another packet     
-    //delay(200);
-    //LoRa.receive();
-    packetSize = LoRa.parsePacket();
-    if (packetSize != 0) break;
-  }
+  // enable RF subsystem for hardware TRNG
+  wifi_init_config_t wic = WIFI_INIT_CONFIG_DEFAULT();
+  esp_wifi_init(&wic);
 
   delay(2000);
 
-  //should have received first packet (R)
-  while (LoRa.available()) {
-      packet += String((char)LoRa.read());
+  // generate sufficient entropy for our uses
+  RNG.begin("LoRa Sender");
+  updateNoise();
+
+  // creates shared secret with drone reciever for encryption
+  initSession();
+}
+
+void loop()
+{
+  counter++;
+  sendPacket(String(counter));
+  //displayText(String("I am the base station!\n") +
+  //            "Sending packet: " + String(counter));
+  delay(1000);
+}
+
+void recieveHandler(int packetSize)
+{
+  if (!packetSize)
+    return;
+}
+
+void generateKeys()
+{
+  Curve25519::dh1(publicKey, privateKey);
+}
+
+void logHex(String n, uint8_t *s, size_t size)
+{
+  if (!DEBUG)
+    return;
+  Serial.print(n);
+  for (size_t i = 0; i < size; i++)
+  {
+    Serial.printf("%02x", *(s + i));
+  }
+  Serial.println();
+}
+
+void generateSecret()
+{
+  Curve25519::dh2(f_publicKey, privateKey);
+  memcpy(sharedKey, f_publicKey, KEY_SIZE);
+  logHex("Shared secret: ", sharedKey, KEY_SIZE);
+}
+
+void displayText(String s)
+{
+  Heltec.DisplayText(s);
+  if (DEBUG)
+    Serial.print(s + "\n");
+}
+
+void sendPacket(String s)
+{
+  // convert the input String to an array of bytes
+  uint8_t message[s.length() + 1];
+  s.toCharArray((char *)message, s.length() + 1);
+  if (DEBUG)
+    Serial.print(s + " is my message.\n");
+  logHex("Sending message: ", message, s.length() + 1);
+
+  // send the message to the recipient in ciphertext
+  sendCipher(message, s.length() + 1);
+  logHex("Sent cipher: ", message, s.length() + 1);
+}
+
+void generateIV()
+{
+  // check if there is enough entropy in the system for IV
+  if (!RNG.available(IV_SIZE))
+  {
+    displayText("Insufficient entropy\nto generate IV\nExiting...");
+    while (1)
+      ;
   }
 
-  printinfo = "I am the base station! \nGot value: \n" + packet;
-  Heltec.DisplayText(printinfo);
+  RNG.rand(IV, IV_SIZE);
+}
 
-  R = packet.toInt();
-  k = ((int)pow(R,s)) % p;
+void sendClear(uint8_t *buf, size_t size)
+{
+  LoRa.beginPacket();
+  LoRa.write(buf, size);
+  LoRa.endPacket();
+}
 
-  printinfo = "I am the base station! \nSecured connection \nestablished\n";
-  printinfo += "Shared key: " + String(k);
-  Heltec.DisplayText(printinfo);
-	delay(300);
-  
-  while (1) {
-    //send packets
-    printinfo = "I am the base station! \nSending packet: " + String(counter);
-    LoRa.beginPacket();
-    //LoRa.setTxPower(14,RF_PACONFIG_PASELECT_PABOOST);
-    LoRa.print(counter);
-    LoRa.endPacket();
-    counter++;
-    Heltec.DisplayText(printinfo);
-    delay(1000);
+void sendCipher(uint8_t *buf, size_t size)
+{
+  encrypt(buf, size);
+  LoRa.beginPacket();
+  LoRa.write(buf, size);
+  LoRa.endPacket();
+}
+
+void encrypt(uint8_t *input, size_t size)
+{
+  chacha.encrypt(input, input, size);
+}
+
+void decrypt(uint8_t *input, size_t size)
+{
+  chacha.decrypt(input, input, size);
+}
+
+void sendKey()
+{
+  LoRa.beginPacket();
+  LoRa.write(publicKey, KEY_SIZE);
+  LoRa.endPacket();
+  if (DEBUG)
+    logHex("Sent key ", publicKey, KEY_SIZE);
+}
+
+void recieveKey()
+{
+  LoRa.readBytes(f_publicKey, KEY_SIZE);
+  if (DEBUG)
+    logHex("Recieved key ", f_publicKey, KEY_SIZE);
+}
+
+String recievePacket()
+{
+  // recieve ciphertext message and decrypt it to cleartext
+  uint8_t coded[LoRa.available()];
+  recieveCipher(coded, LoRa.available());
+
+  // return message as a String
+  return String((char *)coded);
+}
+
+void recieveClear(uint8_t *buf, size_t size)
+{
+  LoRa.readBytes(buf, size);
+}
+
+void recieveCipher(uint8_t *buf, size_t size)
+{
+  LoRa.readBytes(buf, size);
+  decrypt(buf, size);
+}
+
+void awaitPacket()
+{
+  while (1)
+  {
+    if (LoRa.parsePacket())
+      break;
   }
 }
 
-void setReceive(int packetSize) {
-  receivedmsg = true;
-  return;
+void advertiseConnection()
+{
+  int lastSendTime = 0;
+  while (1)
+  {
+    if (millis() - lastSendTime > 5000)
+    {
+      sendKey();
+      lastSendTime = millis();
+    }
+    if (LoRa.parsePacket())
+      break;
+  }
+}
+
+void initSession()
+{
+  // check if there is enough entropy in the system for our keygen
+  if (!RNG.available(KEY_SIZE))
+  {
+    displayText("Insufficient entropy\nto generate key pair\nExiting...");
+    while (1)
+      ;
+  }
+
+  // generate public/private key pair
+  generateKeys();
+  displayText("Generated keys!\n");
+  logHex("Public key: ", publicKey, KEY_SIZE);
+  logHex("Private key: ", privateKey, KEY_SIZE);
+  delay(1000);
+
+  // advertise connection with public key
+  displayText("Connecting...");
+  advertiseConnection();
+  displayText("Detected other device.");
+
+  // recieve foreign public key from reciever
+  recieveKey();
+  displayText("Connection established!");
+
+  // generate secret shared key for encryption
+  generateSecret();
+  chacha.setKey(sharedKey,KEY_SIZE);
+
+  // generate IV for encryption with ChaCha
+  updateNoise();
+  generateIV();
+  chacha.setIV(IV, IV_SIZE);
+
+  // deliver IV to recipient in cleartext
+  sendClear(IV, IV_SIZE);
+  logHex("Sent IV: ", IV, IV_SIZE);
+  delay(5000);
+}
+
+void updateNoise()
+{
+  esp_fill_random(noise, 32);
+  RNG.stir(noise, sizeof(noise), sizeof(noise) * 8);
 }
