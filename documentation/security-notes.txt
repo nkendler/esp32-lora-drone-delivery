@@ -1,37 +1,26 @@
-key - diffie-hellman
+We use ECDH (Elliptic Curve Diffie-Hellman) key exchange to generate a shared
+secret key for both the sender and the reciever. Specifically, the EC Curve25519
+is used and broadband noise from the LoRa module is used to generate true randomness.
 
-1. 
-Sender and Receiver publicly agree to use a module p = 23 and base g = 5
+After the keys are exchanged and the shared secret is generated, the sender sends an
+initialization vector (IV) also called a "nonce" that is randomly generated and unique
+to each session. The shared secret key and nonce are input to the ChaCha20 stream
+cipher algorithm, which produces a stream of bytes that is XORed with the cleartext
+to produce the ciphertext.
 
-2.
-Sender and Receiver each choose a secret integer (s for sender, r for receiver)
+The reciever XORs the same stream of bytes from ChaCha20 with the ciphertext to
+recover the cleartext.
 
-3.
-Sender chooses s = 4 and sends receiver S = (g^s) mod p = (5^4) mod 23 = 4
-Receiver chooses r = 3 and sends sender R = (g^r) mod p = (5^3) mod 23 = 10
-
-4. 
-Sender computes shared key k = (R^s) mod p = (10^4) mod 23 = 18
-Receiver computes shared key k = (S^r) mod p = (4 ^ 3) mod 23 = 18
-
-encryption
-
-
-notes - additional
-
-base station (sender) 
-sends: S
-has: p, g, s
-receives: R
-
-
-drone station (receiver)
-sends: R
-has: p, g, r
-receives: S
-
-
-base station -06
-drone station -01
-
-
+Sources:
+https://rweather.github.io/arduinolibs/index.html
+https://github.com/fcgdam/AESCrypto_ECDH_KeyExchange
+https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/random.html
+https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_wifi.html
+https://en.wikipedia.org/wiki/Curve25519
+https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
+https://en.wikipedia.org/wiki/Key_exchange
+https://crypto.stackexchange.com/questions/34455/whats-the-appeal-of-using-chacha20-instead-of-aes
+https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_Block_Chaining_(CBC)
+https://crypto.stackexchange.com/questions/60336/is-it-safe-to-use-a-random-numbers-instead-of-a-counter-in-chacha20
+https://stackoverflow.com/questions/38007478/encrypt-and-decrypt-string-using-chacha20
+https://en.wikipedia.org/wiki/Salsa20
