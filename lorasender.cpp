@@ -1,8 +1,8 @@
 /* 
   Sender code.
 
-  Authentication using diffie-hellman key exchange.
-  Encryption TBD.
+  Elliptic curve diffie-hellman key exchange using Curve25519.
+  Symmetric encryption using ChaCha20.
   
 */
 #define ESP32 1
