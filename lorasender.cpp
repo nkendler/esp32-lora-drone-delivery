@@ -36,18 +36,15 @@ ChaCha chacha = ChaCha();
 
 int counter = 0;
 
-void recieveHandler(int packetSize);
-void updateNoise();
+void allocateEntropy(size_t size);
 void initSession();
 void advertiseConnection();
 void awaitPacket();
 String recievePacket();
-void recieveKey();
-void sendKey();
 void sendPacket(String s);
 void displayText(String s);
 void generateSecret();
-void logHex(String n, uint8_t *s);
+void logHex(String n, uint8_t *s, size_t size);
 void generateKeys();
 void generateIV();
 void sendClear(uint8_t *buf, size_t size);
@@ -60,16 +57,10 @@ void recieveCipher(uint8_t *buf, size_t size);
 void setup()
 {
   Heltec.begin(true, true, true, true, BAND);
-
-  // enable RF subsystem for hardware TRNG
-  wifi_init_config_t wic = WIFI_INIT_CONFIG_DEFAULT();
-  esp_wifi_init(&wic);
-
   delay(2000);
 
   // generate sufficient entropy for our uses
   RNG.begin("LoRa Sender");
-  updateNoise();
 
   // creates shared secret with drone reciever for encryption
   initSession();
@@ -79,22 +70,21 @@ void loop()
 {
   counter++;
   sendPacket(String(counter));
-  //displayText(String("I am the base station!\n") +
-  //            "Sending packet: " + String(counter));
+  displayText(String("I am the base station!\n") +
+              "Sending packet: " + String(counter));
   delay(1000);
 }
 
-void recieveHandler(int packetSize)
-{
-  if (!packetSize)
-    return;
-}
-
+// generate public-private key pair using ECDH
 void generateKeys()
 {
+  allocateEntropy(KEY_SIZE);
   Curve25519::dh1(publicKey, privateKey);
+  logHex("Public key: ", publicKey, KEY_SIZE);
+  logHex("Private key: ", privateKey, KEY_SIZE);
 }
 
+// log a buffer of bytes to the Serial
 void logHex(String n, uint8_t *s, size_t size)
 {
   if (!DEBUG)
@@ -107,6 +97,7 @@ void logHex(String n, uint8_t *s, size_t size)
   Serial.println();
 }
 
+// generate shared secret from ECDH
 void generateSecret()
 {
   Curve25519::dh2(f_publicKey, privateKey);
@@ -114,6 +105,7 @@ void generateSecret()
   logHex("Shared secret: ", sharedKey, KEY_SIZE);
 }
 
+// display text on the OLED display, and log it to Serial if we're in DEBUG mode
 void displayText(String s)
 {
   Heltec.DisplayText(s);
@@ -121,33 +113,29 @@ void displayText(String s)
     Serial.print(s + "\n");
 }
 
+// send an encrypted packet
 void sendPacket(String s)
 {
   // convert the input String to an array of bytes
   uint8_t message[s.length() + 1];
   s.toCharArray((char *)message, s.length() + 1);
-  if (DEBUG)
-    Serial.print(s + " is my message.\n");
-  logHex("Sending message: ", message, s.length() + 1);
 
   // send the message to the recipient in ciphertext
   sendCipher(message, s.length() + 1);
-  logHex("Sent cipher: ", message, s.length() + 1);
 }
 
+// randomly generate IV/nonce for use in ChaCha20
 void generateIV()
 {
   // check if there is enough entropy in the system for IV
-  if (!RNG.available(IV_SIZE))
-  {
-    displayText("Insufficient entropy\nto generate IV\nExiting...");
-    while (1)
-      ;
-  }
+  allocateEntropy(IV_SIZE);
 
+  // randomly generate IV
   RNG.rand(IV, IV_SIZE);
+  logHex("IV: ", IV, IV_SIZE);
 }
 
+// send a cleartext message
 void sendClear(uint8_t *buf, size_t size)
 {
   LoRa.beginPacket();
@@ -155,6 +143,7 @@ void sendClear(uint8_t *buf, size_t size)
   LoRa.endPacket();
 }
 
+// encrypt a cleartext message into ciphertext and then send it
 void sendCipher(uint8_t *buf, size_t size)
 {
   encrypt(buf, size);
@@ -163,32 +152,19 @@ void sendCipher(uint8_t *buf, size_t size)
   LoRa.endPacket();
 }
 
+// encrypt a buffer
 void encrypt(uint8_t *input, size_t size)
 {
   chacha.encrypt(input, input, size);
 }
 
+// decrypt a buffer
 void decrypt(uint8_t *input, size_t size)
 {
   chacha.decrypt(input, input, size);
 }
 
-void sendKey()
-{
-  LoRa.beginPacket();
-  LoRa.write(publicKey, KEY_SIZE);
-  LoRa.endPacket();
-  if (DEBUG)
-    logHex("Sent key ", publicKey, KEY_SIZE);
-}
-
-void recieveKey()
-{
-  LoRa.readBytes(f_publicKey, KEY_SIZE);
-  if (DEBUG)
-    logHex("Recieved key ", f_publicKey, KEY_SIZE);
-}
-
+// recieve an encrypted packet
 String recievePacket()
 {
   // recieve ciphertext message and decrypt it to cleartext
@@ -199,17 +175,20 @@ String recievePacket()
   return String((char *)coded);
 }
 
+// read cleartext message
 void recieveClear(uint8_t *buf, size_t size)
 {
   LoRa.readBytes(buf, size);
 }
 
+// read ciphertext message and decrypt it into cleartext
 void recieveCipher(uint8_t *buf, size_t size)
 {
   LoRa.readBytes(buf, size);
   decrypt(buf, size);
 }
 
+// wait for a packet to arrive and then exit
 void awaitPacket()
 {
   while (1)
@@ -219,16 +198,20 @@ void awaitPacket()
   }
 }
 
+// advertise this device to other devices and exit when another device says hello
 void advertiseConnection()
 {
   int lastSendTime = 0;
   while (1)
   {
-    if (millis() - lastSendTime > 5000)
+    // send a hello every 1000 milliseconds
+    if (millis() - lastSendTime > 1000)
     {
-      sendKey();
+      sendClear(publicKey, KEY_SIZE);
       lastSendTime = millis();
     }
+
+    // check for any other hellos
     if (LoRa.parsePacket())
       break;
   }
@@ -236,47 +219,50 @@ void advertiseConnection()
 
 void initSession()
 {
-  // check if there is enough entropy in the system for our keygen
-  if (!RNG.available(KEY_SIZE))
-  {
-    displayText("Insufficient entropy\nto generate key pair\nExiting...");
-    while (1)
-      ;
-  }
-
   // generate public/private key pair
   generateKeys();
-  displayText("Generated keys!\n");
-  logHex("Public key: ", publicKey, KEY_SIZE);
-  logHex("Private key: ", privateKey, KEY_SIZE);
+  displayText("Generated keys!");
   delay(1000);
 
   // advertise connection with public key
   displayText("Connecting...");
   advertiseConnection();
-  displayText("Detected other device.");
 
   // recieve foreign public key from reciever
-  recieveKey();
+  recieveClear(f_publicKey, KEY_SIZE);
   displayText("Connection established!");
 
   // generate secret shared key for encryption
   generateSecret();
-  chacha.setKey(sharedKey,KEY_SIZE);
+  chacha.setKey(sharedKey, KEY_SIZE);
 
   // generate IV for encryption with ChaCha
-  updateNoise();
   generateIV();
   chacha.setIV(IV, IV_SIZE);
 
   // deliver IV to recipient in cleartext
   sendClear(IV, IV_SIZE);
-  logHex("Sent IV: ", IV, IV_SIZE);
   delay(5000);
 }
 
-void updateNoise()
+void allocateEntropy(size_t size)
 {
-  esp_fill_random(noise, 32);
-  RNG.stir(noise, sizeof(noise), sizeof(noise) * 8);
+  // check for sufficient entropy
+  if (RNG.available(size))
+    return;
+
+  // if we need more, generate some from broadband noise
+  uint8_t noise[1];
+  for (size_t i = 0; i < size; i++)
+  {
+    noise[0] = LoRa.random();
+    RNG.stir(noise, sizeof(noise), sizeof(noise) * 8);
+  }
+
+  // check that we have enough, otherwise halt
+  if (RNG.available(size))
+    return;
+  displayText("Insufficient entropy\nExiting...");
+  while (1)
+    ;
 }
