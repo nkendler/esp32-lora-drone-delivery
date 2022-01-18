@@ -12,9 +12,13 @@ uint8_t ECE496::f_publicKey[KEY_SIZE];
 uint8_t ECE496::sharedKey[KEY_SIZE];
 uint8_t ECE496::IV[IV_SIZE];
 
-void ECE496::begin(const char* id) {
+bool ECE496::sender;
+
+void ECE496::begin(const char *id)
+{
     chacha = ChaCha();
     RNG.begin(id);
+    sender = false;
 }
 
 // generate public-private key pair using ECDH
@@ -180,4 +184,65 @@ void ECE496::allocateEntropy(size_t size)
     displayText("Insufficient entropy\nExiting...");
     while (1)
         ;
+}
+
+bool ECE496::isSender()
+{
+    return ECE496::sender;
+}
+
+bool ECE496::isReciever()
+{
+    return !ECE496::sender;
+}
+
+void ECE496::initSession(bool sender)
+{
+    // determine if we are a sender
+    ECE496::sender = sender;
+
+    // generate public/private key pair
+    generateKeys();
+    displayText("Generated keys!");
+    delay(1000);
+
+    // Wait for a connection with another device
+    displayText("Connecting...");
+    if (isSender())
+    {
+        advertiseConnection();
+    }
+    else
+    {
+        awaitPacket();
+    }
+
+    // recieve foreign public key from sender
+    recieveClear(f_publicKey, KEY_SIZE);
+
+    if (isReciever())
+    {
+        // reply with our public key for generating our shared secret
+        sendClear(publicKey, KEY_SIZE);
+    }
+    displayText("Connection established!");
+
+    // generate secret shared key for encryption
+    generateSecret();
+    chacha.setKey(sharedKey, KEY_SIZE);
+
+    if (isSender())
+    {
+        // generate IV for encryption with ChaCha and send to reciever
+        generateIV();
+        sendClear(IV, IV_SIZE);
+    }
+    else
+    {
+        // recieve IV/Nonce from sender to be used in our ChaCha20
+        awaitPacket();
+        recieveClear(IV, IV_SIZE);
+    }
+    chacha.setIV(IV, IV_SIZE);
+    logHex("IV: ", IV, IV_SIZE);
 }

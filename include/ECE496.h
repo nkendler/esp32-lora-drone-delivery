@@ -2,7 +2,7 @@
 #define __ECE496_H__
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 #ifndef KEY_SIZE
@@ -44,7 +44,10 @@ public:
     static uint8_t sharedKey[KEY_SIZE];
     static uint8_t IV[IV_SIZE];
     static ChaCha chacha;
-
+    static void initSession(bool sender);
+    static bool isSender();
+    static bool isReciever();
+    static bool sender;
 private:
 
     ECE496() {}
