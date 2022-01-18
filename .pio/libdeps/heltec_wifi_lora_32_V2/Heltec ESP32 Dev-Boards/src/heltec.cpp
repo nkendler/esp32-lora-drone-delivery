@@ -30,7 +30,7 @@ void Heltec_ESP32::begin(bool DisplayEnable, bool LoRaEnable, bool SerialEnable,
 
 	// UART
 	if (SerialEnable) {
-		//Serial.begin(115200);
+		Serial.begin(115200);
 		Serial.flush();
 		delay(50);
 		Serial.print("Serial initial done\r\n");

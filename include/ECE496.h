@@ -23,14 +23,14 @@ class ECE496
 public:
     static void advertiseConnection();
     static void awaitPacket();
-    static void awaitPacketUntil();
+    static void awaitPacketUntil(unsigned long timeout);
     static String recievePacket();
     static void sendPacket(String s);
     static void displayText(String s);
     static void logHex(String n, uint8_t *s, size_t size);
     static void begin(const char *id);
     static void initSession(bool sender);
-    void ECE496::closeSession();
+    static void closeSession();
     static bool isSender();
     static bool isReciever();
 

@@ -132,7 +132,9 @@ void ECE496::recieveClear(uint8_t *buf, size_t size)
 void ECE496::recieveCipher(uint8_t *buf, size_t size)
 {
     LoRa.readBytes(buf, size);
+    logHex("Coded: ", buf, size);
     decrypt(buf, size);
+    logHex("Uncoded: ", buf, size);
 }
 
 // wait for a packet to arrive and then exit
