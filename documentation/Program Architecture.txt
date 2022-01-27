@@ -24,6 +24,7 @@ class name: core
 description: all functionality that is common amongst all stations (ground, hospital, and drone)
 function members:
 - initSession
+- displayText
 data members:
 - station
 [TO ADD]
@@ -38,6 +39,12 @@ function prototype: static void initSession(uint8_t station)
 access: public
 inputs and description: 
 - station --> defines what kind of station device is (drone, ground, hospital)
+output and description: N/A
+
+function name: displayText
+function prototype:
+access: public
+inputs and description:
 output and description: N/A
 
 
@@ -85,18 +92,48 @@ CLASS 4: drone
 class name: drone
 description: all functionality that is specific to needs of the drone station
 function members:
+- receiveOrder
+- sendOrder
+- getOrdersLeft
 data members:
 - maxOrders
+- currentOrders
+- ordersLeft
 [TO ADD]
 
-function name:
+function name: receiveOrder
+function prototype:
+access: 
+inputs and description:
+output and description:
+- decrease ordersLeft by 1
+
+function name: sendOrder
 function prototype:
 access:
 inputs and description:
 output and description:
+- increase ordersLeft by 1
+
+function name: getOrdersLeft
+function prototype: uint8_t getOrdersLeft()
+access: public
+inputs and description: N/A
+output and description: uint8_t, return the value of ordersLeft
 
 variable name: maxOrders
 variable type: TBD
 access: private
 description and possible values: range (0-large), defines the maximum numbers a drone can hold in memory
 
+variable name: currentOrders
+variable type: TBD
+access: private
+description and possible values: range (0-large), defines the current number of orders drone currently holds
+in memory
+
+variable name: ordersLeft
+variable type: TBD
+access: private
+description and possible values: range (0-large), defines the remaining number of orders a drone can receive before
+running out of memory
