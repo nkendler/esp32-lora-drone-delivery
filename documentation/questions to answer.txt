@@ -51,3 +51,10 @@ order of decisions
 1. logic for drone, ground
 2. logic for cli
 3. class structure/architecture for all
+
+
+
+QUESTIONS FOR AERLIFT   
+1. info needed for packet
+2. how much they want given over from our work -- if source code, do they need like header definitions for
+each file? etc?
