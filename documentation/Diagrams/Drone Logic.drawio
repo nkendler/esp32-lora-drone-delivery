@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-        <mxGraphModel dx="693" dy="347" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="728" dy="364" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="WIyWlLk6GJQsqaUBKTNV-0"/>
                 <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0"/>
@@ -16,13 +16,13 @@
                 <mxCell id="OJD0DWyWejZvtVfnCre9-1" value="Enable Heltec board's display, serial and LoRa" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="250" y="100" width="100" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="1" value="" style="edgeStyle=none;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="OJD0DWyWejZvtVfnCre9-8" target="0">
+                <mxCell id="1" value="" style="edgeStyle=none;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="OJD0DWyWejZvtVfnCre9-8" target="0" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="OJD0DWyWejZvtVfnCre9-8" value="Generate public and private keys" style="rounded=1;whiteSpace=wrap;html=1;shadow=0;fillColor=default;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="240" y="190" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="2" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="0" target="0">
+                <mxCell id="2" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="0" target="0" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="390" y="330" as="targetPoint"/>
                         <Array as="points">
@@ -31,32 +31,32 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="28" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="2">
+                <mxCell id="28" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="2" vertex="1" connectable="0">
                     <mxGeometry x="-0.2603" y="-2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="5" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="0" target="4">
+                <mxCell id="5" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="0" target="4" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="0" value="Did I receive a packet?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="0" value="Did I receive a packet?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="220" y="280" width="160" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="4" target="13">
+                <mxCell id="14" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="4" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="19" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="4" target="18">
+                <mxCell id="19" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="4" target="18" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="20" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="19">
+                <mxCell id="20" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="19" vertex="1" connectable="0">
                     <mxGeometry x="-0.34" y="2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="4" value="Is it a hello from a ground station?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="4" value="Is it a hello from a ground station?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="225" y="390" width="150" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="16" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.794;entryY=0.763;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="13" target="0">
+                <mxCell id="16" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.794;entryY=0.763;entryDx=0;entryDy=0;entryPerimeter=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="13" target="0" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="420" y="380" as="targetPoint"/>
                         <Array as="points">
@@ -64,55 +64,58 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="17" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="16">
+                <mxCell id="17" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="16" vertex="1" connectable="0">
                     <mxGeometry x="-0.4524" y="-1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="13" value="Is it a hello from a hospital station?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="13" value="Is it a hello from a hospital station?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="490" y="390" width="140" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="15" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="15" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="415" y="450" width="30" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="22" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="18" target="21">
+                <mxCell id="22" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="18" target="21" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="18" value="Check getOrdersLeft" style="whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="18" value="Check getOrdersLeft" style="whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="240" y="525" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="23" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="21" target="0">
+                <mxCell id="23" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="21" target="0" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="210" y="550" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="29" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="23">
+                <mxCell id="29" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="23" vertex="1" connectable="0">
                     <mxGeometry x="-0.5704" y="-2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="33" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="21" target="32">
+                <mxCell id="33" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="21" target="32" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="34" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="33">
+                <mxCell id="34" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="33" vertex="1" connectable="0">
                     <mxGeometry x="-0.15" y="3" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="21" value="is getOrdersLeft&amp;nbsp;&amp;gt; 0?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="21" value="is getOrdersLeft&amp;nbsp;&amp;gt; 0?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="217.5" y="620" width="165" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="36" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="32" target="35">
+                <mxCell id="36" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="32" target="35" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="32" value="Exchange keys and establish shared private key" style="whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="32" value="Exchange keys and establish shared private key" style="whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="240" y="740" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="35" value="Send packet containing getOrdersLeft" style="whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="35" value="Send packet containing getOrdersLeft" style="whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="240" y="830" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="37" value="[TBD - decide how to add orders, encrypt/decrypt, and how to end connection]" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="37" value="[TBD - decide how to add orders, encrypt/decrypt, and how to end connection]" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="225" y="920" width="150" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="[TBD - decide how to send orders]" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                    <mxGeometry x="500" y="510" width="150" height="90" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

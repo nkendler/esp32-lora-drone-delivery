@@ -100,6 +100,7 @@ data members:
 - currentOrders
 - ordersLeft
 [TO ADD]
+[sepcifically - data structure to hold orders]
 
 function name: receiveOrder
 function prototype:

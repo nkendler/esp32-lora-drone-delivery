@@ -1,0 +1,31 @@
+program architecture
+------------------------
+
+class: core
+- what functions in ece496.h do we need in core or move to others?
+
+class: drone
+- how to keep data abt orders [can decide after meeting w/ aerlift] - data structure, size, etc
+- general station specific functions
+
+class: ground
+- need to figure out CLI first, then draw logic diagram
+- general station specific functions
+
+class: hospital
+[cant do until meeting w/ aerlift]
+
+
+packet encoding
+-------------------
+[cant do until meeting w/ aerlift]
+
+cli 
+-------------------
+- decide what platform
+- how it connects to board
+- i/o b/w board and cli
+
+hospital db
+------------------
+[cant do until meeting w/ aerlift]
