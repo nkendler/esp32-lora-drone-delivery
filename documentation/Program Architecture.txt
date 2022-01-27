@@ -1,0 +1,102 @@
+CLASS N: prototype
+-------------------------------------------------------------------------------------------------
+class name: 
+description: 
+function members:
+data members:
+
+[function member]
+function name:
+function prototype:
+access:
+inputs and description:
+output and description:
+
+[data member]
+variable name:
+variable type:
+access:
+description and possible values:
+
+CLASS 1: core
+-------------------------------------------------------------------------------------------------
+class name: core
+description: all functionality that is common amongst all stations (ground, hospital, and drone)
+function members:
+- initSession
+data members:
+- station
+[TO ADD]
+
+variable name: station
+variable type: uint8_t
+access: private
+description and possible values: identifies the type of station. 0 = ground, 1 = drone, 2 = hospital
+
+function name: initSession
+function prototype: static void initSession(uint8_t station)
+access: public
+inputs and description: 
+- station --> defines what kind of station device is (drone, ground, hospital)
+output and description: N/A
+
+
+CLASS 2: ground
+-------------------------------------------------------------------------------------------------
+class name: ground
+description: all functionality that is specific to needs of the ground station
+function members:
+data members:
+[TO ADD]
+
+function name:
+function prototype:
+access:
+inputs and description:
+output and description:
+
+variable name:
+variable type:
+access:
+description and possible values:
+
+CLASS 3: hospital
+-------------------------------------------------------------------------------------------------
+class name: hospital
+description: all functionality that is specific to needs of the hospital station
+function members:
+data members:
+[TO ADD]
+
+function name:
+function prototype:
+access:
+inputs and description:
+output and description:
+
+variable name:
+variable type:
+access:
+description and possible values:
+
+
+CLASS 4: drone
+-------------------------------------------------------------------------------------------------
+class name: drone
+description: all functionality that is specific to needs of the drone station
+function members:
+data members:
+- maxOrders
+[TO ADD]
+
+function name:
+function prototype:
+access:
+inputs and description:
+output and description:
+
+variable name: maxOrders
+variable type: TBD
+access: private
+description and possible values: range (0-large), defines the maximum numbers a drone can hold in memory
+
