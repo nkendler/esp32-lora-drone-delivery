@@ -29,3 +29,25 @@ cli
 hospital db
 ------------------
 [cant do until meeting w/ aerlift]
+
+ground logic
+------------------
+- figure out what needs to be decided now or can be a var (time out, etc)
+- how to send orders to drone (entire handshake decisions) -- drawio
+
+drone logic
+-----------------
+- handshake decisions b/w drone and ground -- drawio
+- things like timeout/power consumption -- do we do this now or edit based on testing? -- have some kind of wait in the diagrams or 
+architecture somewhere so we have a baseline
+
+hospital logic
+-----------------
+[cant do until meeting w/ aerlift]
+
+
+
+order of decisions
+1. logic for drone, ground
+2. logic for cli
+3. class structure/architecture for all
