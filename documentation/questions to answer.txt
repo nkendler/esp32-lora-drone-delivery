@@ -58,3 +58,4 @@ QUESTIONS FOR AERLIFT
 1. info needed for packet
 2. how much they want given over from our work -- if source code, do they need like header definitions for
 each file? etc?
+3. how long does it take to fullfill orders
