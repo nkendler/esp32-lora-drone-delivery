@@ -1,0 +1,35 @@
+answers to qs
+
+Drone and ground communication - follow LoRawan --> need to research to update the protocol
+
+drone logic
+----------
+from ground - 
+listen for orders
+decrypt
+data structure is an array of bytes - update the counts
+some kind of timeout before you stop listening
+
+to hospital - 
+connect and key exchange
+send all orders
+send end packet that says that orders are all sent (when orders left == 0)
+
+
+
+ground logic
+----------
+power on -> if order is 0, not in connecting maxOrders
+when order is put in from the cli, it starts trying to connect to a drone
+*it should be clear that order is here, hasnt been sent to drone*
+just turn off listening/sending after
+
+
+CLI
+---------
+*double check if python has serial output so we can send*
+end interface for users - csv and python
+interface rn for debugging - just use python cli 
+individual order building, csv
+
+when order is made, send order via serial in the processed packet format

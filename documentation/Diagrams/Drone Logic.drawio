@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-        <mxGraphModel dx="728" dy="364" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="971" dy="485" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="WIyWlLk6GJQsqaUBKTNV-0"/>
                 <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0"/>
@@ -42,7 +42,7 @@
                 <mxCell id="0" value="Did I receive a packet?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="220" y="280" width="160" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="4" target="13" edge="1">
+                <mxCell id="14" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;startArrow=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="15" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="19" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="4" target="18" edge="1">
@@ -71,9 +71,6 @@
                 </mxCell>
                 <mxCell id="13" value="Is it a hello from a hospital station?" style="rhombus;whiteSpace=wrap;html=1;rounded=1;shadow=0;gradientColor=none;gradientDirection=radial;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="490" y="390" width="140" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="15" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
-                    <mxGeometry x="415" y="450" width="30" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="22" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="18" target="21" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -114,8 +111,17 @@
                 <mxCell id="37" value="[TBD - decide how to add orders, encrypt/decrypt, and how to end connection]" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="225" y="920" width="150" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="38" value="[TBD - decide how to send orders]" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+                <mxCell id="38" value="[TBD - decide how to send orders]" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
                     <mxGeometry x="500" y="510" width="150" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+                    <mxGeometry x="414" y="420" width="30" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="4" target="15">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="375" y="430" as="sourcePoint"/>
+                        <mxPoint x="490" y="430" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
             </root>
         </mxGraphModel>

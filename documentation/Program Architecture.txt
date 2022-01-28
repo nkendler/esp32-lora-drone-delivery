@@ -138,3 +138,43 @@ variable type: TBD
 access: private
 description and possible values: range (0-large), defines the remaining number of orders a drone can receive before
 running out of memory
+
+CLASS 5: LoRawan-gateway
+-------------------------------------------------------------------------------------------------
+class name: LoRawan-gateway
+description: all functionality related to gateway devices and implementing the lorawan protocol
+function members:
+data members:
+
+[function member]
+function name:
+function prototype:
+access:
+inputs and description:
+output and description:
+
+[data member]
+variable name:
+variable type:
+access:
+description and possible values:
+
+CLASS 6: LoRawan-enddevice
+-------------------------------------------------------------------------------------------------
+class name: LoRawan-enddevice
+description: all functionality related to enddevice devices and implementing the lorawan protocol
+function members:
+data members:
+
+[function member]
+function name:
+function prototype:
+access:
+inputs and description:
+output and description:
+
+[data member]
+variable name:
+variable type:
+access:
+description and possible values:
