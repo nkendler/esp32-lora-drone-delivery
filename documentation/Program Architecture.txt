@@ -51,7 +51,7 @@ output and description: N/A
 CLASS 2: ground
 -------------------------------------------------------------------------------------------------
 class name: ground
-description: all functionality that is specific to needs of the ground station
+description: all functionality that is specific to needs of the ground station, implements LoRaWAN gateway
 function members:
 data members:
 [TO ADD]
@@ -70,7 +70,7 @@ description and possible values:
 CLASS 3: hospital
 -------------------------------------------------------------------------------------------------
 class name: hospital
-description: all functionality that is specific to needs of the hospital station
+description: all functionality that is specific to needs of the hospital station, implements LoRaWAN gateway
 function members:
 data members:
 [TO ADD]
