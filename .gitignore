@@ -3,4 +3,6 @@
 .vscode/launch.json
 .vscode/ipch
 lora-network/.pio/build
+lora-network/.pio/libdeps
+python/venv
 
