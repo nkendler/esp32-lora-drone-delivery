@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import numpy as np
 import time
+import os
 
 class SheetParser():
     def __init__(self, sheet_path=None):
@@ -12,7 +13,7 @@ class SheetParser():
     def import_sheet(self, sheet_path):
         try:
             self.sheet_df = pd.read_excel(sheet_path)
-            print(f"Spreadsheet Succesfully Loaded: {time.time()}")
+            print(f"Spreadsheet Succesfully Loaded")
         except:
             print(f"No Spreadsheet at Location: {sheet_path}")
 
@@ -25,8 +26,14 @@ class SheetParser():
 
 if __name__ == "__main__":
 
-    sheet_path= "order.xls"
+    sheet_path= "Order.xlsx"
 
+    directory = os.getcwd() 
+    print(directory)
+    with open("file.txt", "w+") as fp:
+        fp.write("hey")
+    
+    fp.close()
     #Going to turn into an argument
     sp = SheetParser(sheet_path)
 
