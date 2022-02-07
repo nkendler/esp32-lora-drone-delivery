@@ -28,12 +28,6 @@ if __name__ == "__main__":
 
     sheet_path= "Order.xlsx"
 
-    directory = os.getcwd() 
-    print(directory)
-    with open("file.txt", "w+") as fp:
-        fp.write("hey")
-    
-    fp.close()
     #Going to turn into an argument
     sp = SheetParser(sheet_path)
 
