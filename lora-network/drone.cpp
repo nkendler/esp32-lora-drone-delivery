@@ -7,6 +7,9 @@
 #include "heltec.h"
 #include "ECE496.h"
 #include <arduino_lmic.h>
+#include <Arduino_LoRaWAN_network.h>
+#include <Arduino_LoRaWAN_EventLog.h>
+#include <arduino_lmic.h>
 
 #define BAND 915E6
 
