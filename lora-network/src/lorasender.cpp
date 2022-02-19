@@ -8,31 +8,32 @@
 #define ESP32 1
 #define DEBUG 1
 
-#include "Arduino.h"
+#include "lorasender.h"
+
 #include "heltec.h"
-#include "ECE496.h"
+#include "utils.h"
 
 #define BAND 915E6
 
 int counter = 0;
 
-void setup()
+void ECE496::LoraSender::setup()
 {
   Heltec.begin(true, true, true, true, BAND);
 
   delay(2000);
 
-  ECE496::begin("LoRa Sender");
+  ECE496::Utils::begin("LoRa Sender");
 
   // starts a session as a sender
-  ECE496::initSession(true /* sender */);
+  ECE496::Utils::initSession(true /* sender */);
 }
 
-void loop()
+void ECE496::LoraSender::loop()
 {
   counter++;
-  ECE496::sendPacket(String(counter));
-  ECE496::displayText(String("I am the base station!\n") +
+  ECE496::Utils::sendPacket(String(counter));
+  ECE496::Utils::displayText(String("I am the base station!\n") +
                       "Sending packet: " + String(counter));
   delay(1000);
 }

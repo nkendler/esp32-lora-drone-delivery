@@ -1,20 +1,23 @@
-#include "ECE496.h"
+#include "utils.h"
+
 #include <Curve25519.h>
 #include <RNG.h>
 #include <ChaCha.h>
 #include "heltec.h"
 
-ChaCha ECE496::chacha;
+using namespace ECE496;
 
-uint8_t ECE496::publicKey[KEY_SIZE];
-uint8_t ECE496::privateKey[KEY_SIZE];
-uint8_t ECE496::f_publicKey[KEY_SIZE];
-uint8_t ECE496::sharedKey[KEY_SIZE];
-uint8_t ECE496::IV[IV_SIZE];
+ChaCha Utils::chacha;
 
-bool ECE496::sender;
+uint8_t Utils::publicKey[KEY_SIZE];
+uint8_t Utils::privateKey[KEY_SIZE];
+uint8_t Utils::f_publicKey[KEY_SIZE];
+uint8_t Utils::sharedKey[KEY_SIZE];
+uint8_t Utils::IV[IV_SIZE];
 
-void ECE496::begin(const char *id)
+bool Utils::sender;
+
+void Utils::begin(const char *id)
 {
     chacha = ChaCha();
     RNG.begin(id);
@@ -22,7 +25,7 @@ void ECE496::begin(const char *id)
 }
 
 // generate public-private key pair using ECDH
-void ECE496::generateKeys()
+void Utils::generateKeys()
 {
     allocateEntropy(KEY_SIZE);
     Curve25519::dh1(publicKey, privateKey);
@@ -31,7 +34,7 @@ void ECE496::generateKeys()
 }
 
 // log a buffer of bytes to the Serial
-void ECE496::logHex(String n, uint8_t *s, size_t size)
+void Utils::logHex(String n, uint8_t *s, size_t size)
 {
     if (!DEBUG)
         return;
@@ -44,7 +47,7 @@ void ECE496::logHex(String n, uint8_t *s, size_t size)
 }
 
 // generate shared secret from ECDH
-void ECE496::generateSecret()
+void Utils::generateSecret()
 {
     Curve25519::dh2(f_publicKey, privateKey);
     memcpy(sharedKey, f_publicKey, KEY_SIZE);
@@ -52,7 +55,7 @@ void ECE496::generateSecret()
 }
 
 // display text on the OLED display, and log it to Serial if we're in DEBUG mode
-void ECE496::displayText(String s)
+void Utils::displayText(String s)
 {
     Heltec.DisplayText(s);
     if (DEBUG)
@@ -60,7 +63,7 @@ void ECE496::displayText(String s)
 }
 
 // send an encrypted packet
-void ECE496::sendPacket(String s)
+void Utils::sendPacket(String s)
 {
     // convert the input String to an array of bytes
     uint8_t message[s.length() + 1];
@@ -71,7 +74,7 @@ void ECE496::sendPacket(String s)
 }
 
 // randomly generate IV/nonce for use in ChaCha20
-void ECE496::generateIV()
+void Utils::generateIV()
 {
     // check if there is enough entropy in the system for IV
     allocateEntropy(IV_SIZE);
@@ -82,7 +85,7 @@ void ECE496::generateIV()
 }
 
 // send a cleartext message
-void ECE496::sendClear(uint8_t *buf, size_t size)
+void Utils::sendClear(uint8_t *buf, size_t size)
 {
     LoRa.beginPacket();
     LoRa.write(buf, size);
@@ -90,7 +93,7 @@ void ECE496::sendClear(uint8_t *buf, size_t size)
 }
 
 // encrypt a cleartext message into ciphertext and then send it
-void ECE496::sendCipher(uint8_t *buf, size_t size)
+void Utils::sendCipher(uint8_t *buf, size_t size)
 {
     encrypt(buf, size);
     LoRa.beginPacket();
@@ -99,19 +102,19 @@ void ECE496::sendCipher(uint8_t *buf, size_t size)
 }
 
 // encrypt a buffer
-void ECE496::encrypt(uint8_t *input, size_t size)
+void Utils::encrypt(uint8_t *input, size_t size)
 {
     chacha.encrypt(input, input, size);
 }
 
 // decrypt a buffer
-void ECE496::decrypt(uint8_t *input, size_t size)
+void Utils::decrypt(uint8_t *input, size_t size)
 {
     chacha.decrypt(input, input, size);
 }
 
 // recieve an encrypted packet
-String ECE496::recievePacket()
+String Utils::recievePacket()
 {
     // recieve ciphertext message and decrypt it to cleartext
     uint8_t coded[LoRa.available()];
@@ -122,14 +125,14 @@ String ECE496::recievePacket()
 }
 
 // read cleartext message
-void ECE496::recieveClear(uint8_t *buf, size_t size)
+void Utils::recieveClear(uint8_t *buf, size_t size)
 {
     LoRa.readBytes(buf, size);
     logHex("Recieved clear: ", buf, size);
 }
 
 // read ciphertext message and decrypt it into cleartext
-void ECE496::recieveCipher(uint8_t *buf, size_t size)
+void Utils::recieveCipher(uint8_t *buf, size_t size)
 {
     LoRa.readBytes(buf, size);
     logHex("Coded: ", buf, size);
@@ -138,7 +141,7 @@ void ECE496::recieveCipher(uint8_t *buf, size_t size)
 }
 
 // wait for a packet to arrive and then exit
-void ECE496::awaitPacket()
+void Utils::awaitPacket()
 {
     while (1)
     {
@@ -148,7 +151,7 @@ void ECE496::awaitPacket()
 }
 
 // wait for a packet to arrive and then exit
-void ECE496::awaitPacketUntil(unsigned long timeout)
+void Utils::awaitPacketUntil(unsigned long timeout)
 {
     unsigned long init = millis();
     while (millis() - init < timeout)
@@ -159,7 +162,7 @@ void ECE496::awaitPacketUntil(unsigned long timeout)
 }
 
 // advertise this device to other devices and exit when another device says hello
-void ECE496::advertiseConnection()
+void Utils::advertiseConnection()
 {
     int lastSendTime = 0;
     while (1)
@@ -177,7 +180,7 @@ void ECE496::advertiseConnection()
     }
 }
 
-void ECE496::allocateEntropy(size_t size)
+void Utils::allocateEntropy(size_t size)
 {
     // check for sufficient entropy
     if (RNG.available(size))
@@ -199,20 +202,20 @@ void ECE496::allocateEntropy(size_t size)
         ;
 }
 
-bool ECE496::isSender()
+bool Utils::isSender()
 {
-    return ECE496::sender;
+    return Utils::sender;
 }
 
-bool ECE496::isReciever()
+bool Utils::isReciever()
 {
-    return !ECE496::sender;
+    return !Utils::sender;
 }
 
-void ECE496::initSession(bool sender)
+void Utils::initSession(bool sender)
 {
     // determine if we are a sender
-    ECE496::sender = sender;
+    Utils::sender = sender;
 
     // generate public/private key pair
     generateKeys();
@@ -261,7 +264,7 @@ void ECE496::initSession(bool sender)
 }
 
 // destroys all cryptographically-sensitive information from the session
-void ECE496::closeSession()
+void Utils::closeSession()
 {
     sender = false;
     chacha.clear();
