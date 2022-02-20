@@ -4,6 +4,7 @@
 #include <RNG.h>
 #include <ChaCha.h>
 #include "heltec.h"
+#include <oled/SSD1306Wire.h>
 
 using namespace ECE496;
 
@@ -14,6 +15,7 @@ uint8_t Utils::privateKey[KEY_SIZE];
 uint8_t Utils::f_publicKey[KEY_SIZE];
 uint8_t Utils::sharedKey[KEY_SIZE];
 uint8_t Utils::IV[IV_SIZE];
+
 
 bool Utils::sender;
 
@@ -57,9 +59,18 @@ void Utils::generateSecret()
 // display text on the OLED display, and log it to Serial if we're in DEBUG mode
 void Utils::displayText(String s)
 {
-    Heltec.DisplayText(s);
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, s);
+    Heltec.display->display();
     if (DEBUG)
         Serial.print(s + "\n");
+}
+void Utils::displayText(char *text)
+{
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, text);
+    Heltec.display->display();
+    delay(300);
 }
 
 // send an encrypted packet

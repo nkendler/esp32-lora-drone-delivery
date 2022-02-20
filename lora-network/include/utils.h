@@ -13,10 +13,11 @@
 #define IV_SIZE 8
 #endif
 
-#include "Arduino.h"
 #include <ChaCha.h>
 #include <RNG.h>
 #include <Curve25519.h>
+#include <Arduino.h>
+#include <oled/SSD1306Wire.h>
 
 namespace ECE496 
 {
@@ -29,6 +30,7 @@ namespace ECE496
         static String recievePacket();
         static void sendPacket(String s);
         static void displayText(String s);
+        static void displayText(char *text);
         static void logHex(String n, uint8_t *s, size_t size);
         static void begin(const char *id);
         static void initSession(bool sender);
