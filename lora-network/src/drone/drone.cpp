@@ -36,18 +36,18 @@ void loop()
     ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
   // first byte should be 0x00 to introduce a hospital station
   //                      0xFF                ground station
-  if (r_packet_buf[0] == 0x00)
+  if (ECE496::Utils::getPacketStationType(r_packet_buf) == 2)
   {
     //communicating with hospital station
     //TODO:
   }
-  else if (r_packet_buf[0] == 0xFF)
+  else if (ECE496::Utils::getPacketStationType(r_packet_buf) == 1)
   {
     ECE496::Utils::displayText("I found a ground station!");
 
     //communicating with ground station
     //introduce self to ground station
-    s_packet_buf[0] = 0x0F;
+    ECE496::Utils::buildPacket(s_packet_buf, 3, 1, PACKET_SIZE);
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
 
     //wait for a response

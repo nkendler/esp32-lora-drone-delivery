@@ -316,3 +316,87 @@ void Utils::closeSession()
     memset(publicKey, 0, KEY_SIZE);
     memset(privateKey, 0, KEY_SIZE);
 }
+
+void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int packet_size)
+{
+    // initiallize packet
+    buf[0] = 0x00;
+
+    // 00 for ground
+    // 01 for hospital
+    // 10 for drone
+    switch (station_type)
+    {
+    // ground
+    case 1:
+        //*buf |= 0x00;
+        break;
+    // hospital
+    case 2:
+        buf[0] |= 0x40;
+        break;
+    // drone
+    case 3:
+        buf[0] |= 0x80;
+        break;
+    
+    }
+
+    // 00 for hello
+    // 01 for ack
+    // 10 for payload
+    switch (packet_type)
+    {
+    // hello
+    case 1:
+        //*buf |= 0x00
+        break;
+    // ack
+    case 2:
+        buf[0] |= 0x10;
+        break;
+    // payload
+    case 3:
+        buf[0] |= 0x20;
+    }
+}
+
+int Utils::getPacketStationType(uint8_t *buf)
+{
+    uint8_t header = buf[0];
+    header &= 0xC0;
+
+    switch (header)
+    {
+    // ground
+    case 0x00:
+        return 1;
+    // hospital
+    case 0x40:
+        return 2;
+    // drone
+    case 0x80:
+        return 3;
+    default: return 0;
+    }
+}
+
+int Utils::getPacketType(uint8_t *buf)
+{
+    uint8_t header = buf[0];
+    header &= 0x30;
+
+    switch (header)
+    {
+    // hello
+    case 0x00:
+        return 1;
+    // ack
+    case 0x10:
+        return 2;
+    // payload
+    case 0x20:
+        return 3;
+    default: return 0;
+    }
+}

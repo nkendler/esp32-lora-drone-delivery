@@ -38,8 +38,11 @@ namespace ECE496
         static void closeSession();
         static bool isSender();
         static bool isReciever();
-        static int  receiveUnencryptedPacket(uint8_t *buff, int packet_size);
-        
+        static int  receiveUnencryptedPacket(uint8_t *buf, int packet_size);
+        static void buildPacket
+            (uint8_t *buf, int station_type, int packet_type, int packet_size);
+        static int getPacketStationType(uint8_t *buf);
+        static int getPacketType(uint8_t *buf);
 
     private:
         static void allocateEntropy(size_t size);

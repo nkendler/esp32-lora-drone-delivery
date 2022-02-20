@@ -29,7 +29,7 @@ void setup()
 void loop()
 {
   // advertise existent to potential drone stations
-  s_packet_buf[0] = 0xFF;
+  ECE496::Utils::buildPacket(s_packet_buf, 1, 1, PACKET_SIZE);
   ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
 
   // wait for a response
@@ -38,8 +38,8 @@ void loop()
     int bytes_received =
       ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
     
-    // first byte should be 0x0F to indicate drone station response
-    if (r_packet_buf[0] == 0x0F)
+    // make sure packet is from a drone station
+    if (ECE496::Utils::getPacketStationType(r_packet_buf) == 3)
     {
       // found a drone station
       ECE496::Utils::displayText("I found a drone station");
