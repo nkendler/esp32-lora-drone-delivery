@@ -26,9 +26,10 @@ namespace ECE496
     public:
         static void advertiseConnection();
         static void awaitPacket();
-        static void awaitPacketUntil(unsigned long timeout);
+        static int awaitPacketUntil(unsigned long timeout);
         static String recievePacket();
         static void sendPacket(String s);
+        static void sendUnencryptedPacket(uint8_t *buf, int pakcet_size);
         static void displayText(String s);
         static void displayText(char *text);
         static void logHex(String n, uint8_t *s, size_t size);
@@ -37,6 +38,8 @@ namespace ECE496
         static void closeSession();
         static bool isSender();
         static bool isReciever();
+        static int  receiveUnencryptedPacket(uint8_t *buff, int packet_size);
+        
 
     private:
         static void allocateEntropy(size_t size);

@@ -70,7 +70,11 @@ void Utils::displayText(char *text)
     Heltec.display->clear();
     Heltec.display->drawString(0, 0, text);
     Heltec.display->display();
-    delay(300);
+    if (DEBUG)
+    {
+        Serial.print(text);
+        Serial.print("\n");
+    }
 }
 
 // send an encrypted packet
@@ -82,6 +86,15 @@ void Utils::sendPacket(String s)
 
     // send the message to the recipient in ciphertext
     sendCipher(message, s.length() + 1);
+}
+
+void Utils::sendUnencryptedPacket(uint8_t *buf, int packet_size)
+{
+    LoRa.beginPacket();
+    LoRa.write(buf, packet_size);
+    LoRa.endPacket();
+
+    logHex("Sent: ", buf, packet_size);
 }
 
 // randomly generate IV/nonce for use in ChaCha20
@@ -135,6 +148,20 @@ String Utils::recievePacket()
     return String((char *)coded);
 }
 
+// reads up to packet_size bytes into the buffer
+//returns the actual number of bytes read
+int Utils::receiveUnencryptedPacket(uint8_t *buf, int packet_size)
+{
+    int bytes_available = LoRa.available();
+    int bytes_read = packet_size <= bytes_available ?
+        LoRa.readBytes(buf, packet_size) :
+        LoRa.readBytes(buf, bytes_available);
+
+    logHex("received: ", buf, bytes_read);
+
+    return bytes_read;
+}
+
 // read cleartext message
 void Utils::recieveClear(uint8_t *buf, size_t size)
 {
@@ -162,14 +189,18 @@ void Utils::awaitPacket()
 }
 
 // wait for a packet to arrive and then exit
-void Utils::awaitPacketUntil(unsigned long timeout)
+int Utils::awaitPacketUntil(unsigned long timeout)
 {
     unsigned long init = millis();
     while (millis() - init < timeout)
     {
         if (LoRa.parsePacket())
-            break;
+        {
+            return 1;
+        }
     }
+
+    return 0;
 }
 
 // advertise this device to other devices and exit when another device says hello
