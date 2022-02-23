@@ -5,4 +5,4 @@
 lora-network/.pio/build
 lora-network/.pio/libdeps
 python/venv
-
+*.icloud
