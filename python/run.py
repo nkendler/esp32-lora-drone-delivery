@@ -93,18 +93,24 @@ class SheetParser():
         #on mac, run ls /dev/cu.* to find out which ports are connected
         self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
 
+        '''
         #split packet into bytes
-        print(int(self.Packet))
-        byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big')
-        print("The bytes are : ", byte_array)
-        print(byte_array[3])
+        #byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big')
+        #print("The bytes are : ", byte_array)
         #05 00 8A 30 89
 
+        
         #send packet byte by byte
         for byte in byte_array:
-            self.arduinoconn.write(byte)
-            time.sleep(0.05)
-
+            print("sending byte: ", byte)
+            self.arduinoconn.write(bytes(str(byte), 'utf-8')) #this looks really wonky but the byte var type
+            #makes the serial go crazy so better to convert each byte in an array into a string and back to utf-8
+            #before sending
+            time.sleep(1)
+        '''
+        
+        self.arduinoconn.write(bytes(str(self.Packet), 'utf-8'))
+        print("bytes sent")
         self.arduinoconn.close()
 
 
