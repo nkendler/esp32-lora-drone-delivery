@@ -10,6 +10,8 @@ using namespace ECE496;
 
 ChaCha Utils::chacha;
 
+unsigned int Utils::screenLines = 0;
+
 uint8_t Utils::publicKey[KEY_SIZE];
 uint8_t Utils::privateKey[KEY_SIZE];
 uint8_t Utils::f_publicKey[KEY_SIZE];
@@ -19,12 +21,11 @@ uint8_t Utils::IV[IV_SIZE];
 
 bool Utils::sender;
 
-void Utils::begin(const char *id)
+void Utils::begin(char const *id)
 {
     chacha = ChaCha();
     RNG.begin(id);
     sender = false;
-    Utils::screenLines = 0;
 }
 
 // generate public-private key pair using ECDH
@@ -66,7 +67,7 @@ void Utils::displayText(String s)
     if (DEBUG)
         Serial.print(s + "\n");
 }
-void Utils::displayText(char *text)
+void Utils::displayText(char const *text)
 {
     Heltec.display->clear();
     Heltec.display->drawString(0, 0, text);
@@ -78,20 +79,20 @@ void Utils::displayText(char *text)
     }
 }
 
-void Utils::displayTextAndScroll(char *text)
+void Utils::displayTextAndScroll(char const *text)
 {
-    if (Utils::screenLines % 4 == 0)
+    if (screenLines % 6 == 0)
     {
         Heltec.display->clear();
     }
-    Heltec.display->drawString((Utils::screenLines % 4) * 6, 0, text);
+    Heltec.display->drawString(0, (screenLines % 6) * 10, text);
     Heltec.display->display();
     if (DEBUG)
     {
         Serial.print(text);
         Serial.print("\n");
     }
-    Utils::screenLines++;
+    screenLines++;
 }
 
 // send an encrypted packet
@@ -331,11 +332,11 @@ void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int pac
     // initialize packet
     if (payload != NULL)
     {
-        *buf = *payload;
+        memcpy(buf, payload, packet_size);
     }
     else 
     {
-        memset(buf, packet_size, 0);
+        memset(buf, 0, packet_size);
     }
 
     // 00 for ground
