@@ -1,0 +1,18 @@
+{
+    "DISTRICT_HOSPITAL": {
+        "0": "DRC",
+        "1": "Rwanda"
+    },
+    "RURAL_STATION": {
+        "0": "Station 0"
+    },
+    "ITEM_LIST":
+    {
+        "0": "Bandages",
+        "1": "Vaccines",
+        "2": "Defribilators",
+        "3": "Rubbing Alcohol",
+        "4": "Anesthetics",
+        "5": "Pain Killers"
+    }
+}
