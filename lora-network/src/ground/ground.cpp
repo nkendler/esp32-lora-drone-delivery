@@ -78,7 +78,10 @@ void loop()
   
   case ECE496::Ground::BUILD:
     //ECE496::Utils::displayTextAndScroll("build");
-    ECE496::Utils::buildPacket(s_packet_buf, 1, 3, PACKET_SIZE, order);
+    ECE496::Utils::buildPacket(s_packet_buf,
+                               ECE496::Utils::GROUND, ECE496::Utils::PAYLOAD,
+                               PACKET_SIZE, order);
+
     // assume success for now
     nextState = ECE496::Ground::SEND;
     break;
@@ -97,7 +100,7 @@ void loop()
         ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
       
       // make sure packet is from a drone station
-      if (ECE496::Utils::getPacketStationType(r_packet_buf) == 3)
+      if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE)
       {
         // found a drone station
         ECE496::Utils::displayTextAndScroll("Got ack from drone station");
