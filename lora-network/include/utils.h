@@ -27,8 +27,8 @@ namespace ECE496
         static void advertiseConnection();
         static void awaitPacket();
         static int awaitPacketUntil(unsigned long timeout);
-        static String recievePacket();
-        static void sendPacket(String s);
+        static void receivePacket(char *buf);
+        static void sendPacket(char const *s, int size);
         static void sendUnencryptedPacket(uint8_t *buf, int pakcet_size);
         static void displayText(char const *text);
         static void displayTextAndScroll(char const *text);
@@ -37,7 +37,7 @@ namespace ECE496
         static void initSession(bool sender);
         static void closeSession();
         static bool isSender();
-        static bool isReciever();
+        static bool isReceiver();
         static int  receiveUnencryptedPacket(uint8_t *buf, int packet_size);
         static void buildPacket
             (uint8_t *buf, int station_type, int packet_type, int packet_size);
@@ -51,9 +51,9 @@ namespace ECE496
         static void generateIV();
         static void generateSecret();
         static void sendClear(uint8_t *buf, size_t size);
-        static void recieveClear(uint8_t *buf, size_t size);
+        static void receiveClear(uint8_t *buf, size_t size);
         static void sendCipher(uint8_t *buf, size_t size);
-        static void recieveCipher(uint8_t *buf, size_t size);
+        static void receiveCipher(uint8_t *buf, size_t size);
         static void encrypt(uint8_t *input, size_t size);
         static void decrypt(uint8_t *input, size_t size);
 
