@@ -10,6 +10,8 @@ using namespace ECE496;
 
 ChaCha Utils::chacha;
 
+unsigned int Utils::screenLines = 0;
+
 uint8_t Utils::publicKey[KEY_SIZE];
 uint8_t Utils::privateKey[KEY_SIZE];
 uint8_t Utils::f_publicKey[KEY_SIZE];
@@ -24,7 +26,6 @@ void Utils::begin(const char *id)
     chacha = ChaCha();
     RNG.begin(id);
     sender = false;
-    Utils::screenLines = 0;
 }
 
 // generate public-private key pair using ECDH
@@ -80,18 +81,18 @@ void Utils::displayText(char *text)
 
 void Utils::displayTextAndScroll(char *text)
 {
-    if (Utils::screenLines % 4 == 0)
+    if (screenLines % 6 == 0)
     {
         Heltec.display->clear();
     }
-    Heltec.display->drawString((Utils::screenLines % 4) * 6, 0, text);
+    Heltec.display->drawString(0, (screenLines % 6) * 10, text);
     Heltec.display->display();
     if (DEBUG)
     {
         Serial.print(text);
         Serial.print("\n");
     }
-    Utils::screenLines++;
+    screenLines++;
 }
 
 // send an encrypted packet
