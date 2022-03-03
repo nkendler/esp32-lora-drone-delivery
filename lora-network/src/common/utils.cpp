@@ -24,6 +24,7 @@ void Utils::begin(const char *id)
     chacha = ChaCha();
     RNG.begin(id);
     sender = false;
+    Utils::screenLines = 0;
 }
 
 // generate public-private key pair using ECDH
@@ -79,14 +80,18 @@ void Utils::displayText(char *text)
 
 void Utils::displayTextAndScroll(char *text)
 {
-    Heltec.display->clear();
-    Heltec.display->drawString(0, 0, text);
+    if (Utils::screenLines % 4 == 0)
+    {
+        Heltec.display->clear();
+    }
+    Heltec.display->drawString((Utils::screenLines % 4) * 6, 0, text);
     Heltec.display->display();
     if (DEBUG)
     {
         Serial.print(text);
         Serial.print("\n");
     }
+    Utils::screenLines++;
 }
 
 // send an encrypted packet
