@@ -2,6 +2,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+.vscode
 lora-network/.pio/build
 lora-network/.pio/libdeps
 python/venv
