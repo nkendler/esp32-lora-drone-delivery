@@ -15,29 +15,10 @@
 #define PACKET_SIZE 1
 #define PACKET_WAIT_TIME 5000
 
-namespace ECE496
-{
-  class Ground
-  {
-  public:
-    enum State
-    {
-      CLEAR = 0,
-      WAIT,
-      BUILD,
-      SEND,
-      RECEIVE 
-    };
-  };
-}
-
 // packet buffers
 uint8_t r_packet_buf[PACKET_SIZE];
 uint8_t s_packet_buf[PACKET_SIZE];
 String packet;
-
-ECE496::Ground::State State = ECE496::Ground::WAIT;
-
 int i;
 
 void setup()
@@ -51,65 +32,35 @@ void setup()
 
 void loop()
 {
-  ECE496::Ground::State nextState; 
+  //ECE496::Utils::displayText("I am a ground station\nWaiting for order from CLI");
+  //wait for an order to come through before advertising connection
+  while (Serial.available() < 10); //wait for all bytes to arrive before processing
 
-  switch (State)
+  //packet is received from CLI. its in string form of the int representation of the
+  //packet. ie: if the packet was 0x11101 = 29, then packet is '29'
+  packet = Serial.readString();
+  Serial.print(packet);
+  Serial.println();
+  
+  // advertise existent to potential drone stations
+  ECE496::Utils::buildPacket(s_packet_buf, 1, 1, PACKET_SIZE);
+  ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
+
+  // wait for a response
+  if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME) == 1)
   {
-  case ECE496::Ground::WAIT:
-    if (Serial.available() >= 10)
+    int bytes_received =
+      ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+    
+    // make sure packet is from a drone station
+    if (ECE496::Utils::getPacketStationType(r_packet_buf) == 3)
     {
-      //packet is received from CLI. its in string form of the int representation of the
-      //packet. ie: if the packet was 0x11101 = 29, then packet is '29'
-      packet = Serial.readString();
-      Serial.print(packet);
-      Serial.println();
-
-      nextState = ECE496::Ground::BUILD;
+      // found a drone station
+      ECE496::Utils::displayText("I found a drone station");
     }
     else
     {
-      nextState = ECE496::Ground::WAIT;
+      Serial.print("Received unrecognized packet");
     }
-    break;
-  
-  case ECE496::Ground::BUILD:
-    ECE496::Utils::buildPacket(s_packet_buf, 1, 1, PACKET_SIZE);
-    // assume success for now
-    nextState = ECE496::Ground::SEND;
-    break;
-
-  case ECE496::Ground::SEND:
-    ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
-    nextState = ECE496::Ground::RECEIVE;
-
-  case ECE496::Ground::RECEIVE:
-    // wait for a response
-    if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME) == 1)
-    {
-      int bytes_received =
-        ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
-      
-      // make sure packet is from a drone station
-      if (ECE496::Utils::getPacketStationType(r_packet_buf) == 3)
-      {
-        // found a drone station
-        ECE496::Utils::displayText("Got ack from drone station");
-      }
-      else
-      {
-        Serial.print("Received unrecognized packet");
-      }
-    }
-    nextState = ECE496::Ground::CLEAR;
-    break;
-
-  case ECE496::Ground::CLEAR:
-    nextState = ECE496::Ground::WAIT;
-    break;
-
-  default:
-    Serial.println("This shouldn't happen");
-    nextState = ECE496::Ground::WAIT;
-    break;
   }
 }
