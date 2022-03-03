@@ -82,17 +82,12 @@ class SheetParser():
         self.Packet = self.Packet << 6
         self.Packet += self.RuralStation
 
-        self.Packet = self.Packet << 1
-        self.Packet += self.DistrictHospital
-
         print("Packet now looks like") 
         print(self.Packet)
 
     def decode_to_packet(order, self):
         #order is an int
-        self.DistrictHospital = (self.Packet & 0x1)
-        self.Packet = self.Packet >> 1
-
+        
         self.RuralStation = (self.Packet & 0x31)
         self.Packet = self.Packet >> 6
 
@@ -118,13 +113,14 @@ class SheetParser():
         #on mac, run ls /dev/cu.* to find out which ports are connected
         self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
 
-        '''
+        
         #split packet into bytes
-        byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big')
+        byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big', signed=False)
         print("The bytes are : ", byte_array)
         #05 00 8A 30 89
+        print(byte_array[2])
 
-        
+        '''
         #send packet byte by byte
         for byte in byte_array:
             print("sending byte: ", byte)
