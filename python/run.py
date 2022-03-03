@@ -115,22 +115,20 @@ class SheetParser():
 
         
         #split packet into bytes
-        byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big', signed=False)
-        print("The bytes are : ", byte_array)
-        #05 00 8A 30 89
-        print(byte_array[2])
+        int_array = []
+        packet_use = self.Packet
 
-        '''
-        #send packet byte by byte
-        for byte in byte_array:
-            print("sending byte: ", byte)
-            self.arduinoconn.write(bytes(str(byte), 'utf-8')) #this looks really wonky but the byte var type
-            #makes the serial go crazy so better to convert each byte in an array into a string and back to utf-8
-            #before sending
-            time.sleep(100)
-        '''
+        while packet_use > 0:
+            int_array.append(packet_use & 0xff)
+            packet_use = packet_use >> 8
+
         
-        self.arduinoconn.write(bytes(str(self.Packet), 'utf-8'))
+        #byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big', signed=False)
+        print("The bytes are : ", int_array)
+        #test: 02 80 45 18 44
+
+        #send packet        
+        self.arduinoconn.write(int_array)
         print("bytes sent")
         self.arduinoconn.close()
 
