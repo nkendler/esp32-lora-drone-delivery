@@ -18,7 +18,6 @@ uint8_t Utils::f_publicKey[KEY_SIZE];
 uint8_t Utils::sharedKey[KEY_SIZE];
 uint8_t Utils::IV[IV_SIZE];
 
-
 bool Utils::sender;
 
 void Utils::begin(char const *id)
@@ -96,10 +95,10 @@ void Utils::displayTextAndScroll(char const *text)
 }
 
 // send an encrypted packet
-void Utils::sendPacket(char const* s, int size)
+void Utils::sendPacket(char const *s, int size)
 {
     // send the message to the recipient in ciphertext
-    sendCipher((uint8_t*)s, size);
+    sendCipher((uint8_t *)s, size);
 }
 
 void Utils::sendUnencryptedPacket(uint8_t *buf, int packet_size)
@@ -155,7 +154,7 @@ void Utils::decrypt(uint8_t *input, size_t size)
 void Utils::receivePacket(char *buf)
 {
     // receive ciphertext message and decrypt it to cleartext
-    receiveCipher((uint8_t*)buf, LoRa.available());
+    receiveCipher((uint8_t *)buf, LoRa.available());
 }
 
 // reads up to packet_size bytes into the buffer
@@ -163,9 +162,7 @@ void Utils::receivePacket(char *buf)
 int Utils::receiveUnencryptedPacket(uint8_t *buf, int packet_size)
 {
     int bytes_available = LoRa.available();
-    int bytes_read = packet_size <= bytes_available ?
-        LoRa.readBytes(buf, packet_size) :
-        LoRa.readBytes(buf, bytes_available);
+    int bytes_read = packet_size <= bytes_available ? LoRa.readBytes(buf, packet_size) : LoRa.readBytes(buf, bytes_available);
 
     logHex("received: ", buf, bytes_read);
 
@@ -329,91 +326,74 @@ void Utils::closeSession()
 
 void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int packet_size, uint8_t *payload)
 {
-    // initialize packet
+    // init packet to payload, otherwise fill it with zeroes
     if (payload != NULL)
     {
         memcpy(buf, payload, packet_size);
     }
-    else 
+    else
     {
         memset(buf, 0, packet_size);
     }
 
-    // 00 for ground
-    // 01 for hospital
-    // 10 for drone
+    // add station information to front two bits to packet
     switch (station_type)
     {
-    // ground
-    case 1:
-        //*buf |= 0x00;
+    case GROUND:
         break;
-    // hospital
-    case 2:
-        buf[0] |= 0x40;
+    case HOSPITAL:
+        buf[0] |= 0b01000000;
         break;
-    // drone
-    case 3:
-        buf[0] |= 0x80;
+    case DRONE:
+        buf[0] |= 0x10000000;
         break;
-    
     }
 
-    // 00 for hello
-    // 01 for ack
-    // 10 for payload
+    // add packet type information to third and fourth bits of the packet
     switch (packet_type)
     {
-    // hello
-    case 1:
-        //*buf |= 0x00
+    case HELLO:
         break;
-    // ack
-    case 2:
-        buf[0] |= 0x10;
+    case ACK:
+        buf[0] |= 0x00010000;
         break;
-    // payload
-    case 3:
-        buf[0] |= 0x20;
+    case PAYLOAD:
+        buf[0] |= 0x00100000;
     }
 }
 
-int Utils::getPacketStationType(uint8_t *buf)
+Utils::StationType Utils::getPacketStationType(uint8_t *buf)
 {
     uint8_t header = buf[0];
-    header &= 0xC0;
+    header &= 0x11000000;
 
     switch (header)
     {
-    // ground
-    case 0x00:
-        return 1;
-    // hospital
-    case 0x40:
-        return 2;
-    // drone
-    case 0x80:
-        return 3;
-    default: return 0;
+    case 0b00000000:
+        return GROUND;
+    case 0b01000000:
+        return HOSPITAL;
+    case 0b10000000:
+        return DRONE;
+    default:
+        return Utils::StationType::ERROR;
     }
 }
 
-int Utils::getPacketType(uint8_t *buf)
+Utils::PacketType Utils::getPacketType(uint8_t *buf)
 {
     uint8_t header = buf[0];
-    header &= 0x30;
+    header &= 0b00110000;
 
     switch (header)
     {
-    // hello
-    case 0x00:
-        return 1;
-    // ack
-    case 0x10:
-        return 2;
-    // payload
-    case 0x20:
-        return 3;
-    default: return 0;
+    case 0b00000000:
+        return HELLO;
+    case 0b00010000:
+        return ACK;
+    case 0b00100000:
+        return PAYLOAD;
+    default:
+        return Utils::PacketType::ERROR;
     }
 }
