@@ -77,6 +77,18 @@ void Utils::displayText(char *text)
     }
 }
 
+void Utils::displayTextAndScroll(char *text)
+{
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, text);
+    Heltec.display->display();
+    if (DEBUG)
+    {
+        Serial.print(text);
+        Serial.print("\n");
+    }
+}
+
 // send an encrypted packet
 void Utils::sendPacket(String s)
 {
