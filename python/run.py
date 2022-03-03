@@ -88,6 +88,31 @@ class SheetParser():
         print("Packet now looks like") 
         print(self.Packet)
 
+    def decode_to_packet(order, self):
+        #order is an int
+        self.DistrictHospital = (self.Packet & 0x1)
+        self.Packet = self.Packet >> 1
+
+        self.RuralStation = (self.Packet & 0x31)
+        self.Packet = self.Packet >> 6
+
+        self.ItemOne = (self.Packet & 0x18)
+        self.Packet = self.Packet >> 5
+
+        self.ItemTwo = (self.Packet & 0x18)
+        self.Packet = self.Packet >> 5
+
+        self.ItemThree = (self.Packet & 0x18)
+        self.Packet = self.Packet >> 5
+
+        self.ItemFour = (self.Packet & 0x18)
+        self.Packet = self.Packet >> 5
+
+        self.ItemFive = (self.Packet & 0x18)
+        self.Packet = self.Packet >> 5
+
+        self.ItemSix = (self.Packet & 0x18)
+
     def send(self):
         #note: port changes based on wire connected to computer...
         #on mac, run ls /dev/cu.* to find out which ports are connected
@@ -95,8 +120,8 @@ class SheetParser():
 
         '''
         #split packet into bytes
-        #byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big')
-        #print("The bytes are : ", byte_array)
+        byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big')
+        print("The bytes are : ", byte_array)
         #05 00 8A 30 89
 
         
@@ -106,14 +131,12 @@ class SheetParser():
             self.arduinoconn.write(bytes(str(byte), 'utf-8')) #this looks really wonky but the byte var type
             #makes the serial go crazy so better to convert each byte in an array into a string and back to utf-8
             #before sending
-            time.sleep(1)
+            time.sleep(100)
         '''
         
         self.arduinoconn.write(bytes(str(self.Packet), 'utf-8'))
         print("bytes sent")
         self.arduinoconn.close()
-
-
 
         
 
