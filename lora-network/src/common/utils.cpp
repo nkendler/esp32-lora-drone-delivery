@@ -332,11 +332,11 @@ void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int pac
     // initialize packet
     if (payload != NULL)
     {
-        *buf = *payload;
+        memcpy(buf, payload, packet_size);
     }
     else 
     {
-        memset(buf, packet_size, 0);
+        memset(buf, 0, packet_size);
     }
 
     // 00 for ground

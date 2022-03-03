@@ -57,7 +57,7 @@ void loop()
   switch (State)
   {
   case ECE496::Ground::WAIT:
-    ECE496::Utils::displayTextAndScroll("wait");
+    //ECE496::Utils::displayTextAndScroll("wait");
     if (/*Serial.available() >= 10*/true)
     {
       //packet is received from CLI. its in string form of the int representation of the
@@ -65,7 +65,8 @@ void loop()
       // packet = Serial.readString();
       // Serial.print(packet);
       // Serial.println();
-      *order = 0x0FFFFFFFFF;
+      memset(order, 0xFF, PACKET_SIZE);
+      order[0] = 0x0F;
       ECE496::Utils::displayTextAndScroll("got an order");
       nextState = ECE496::Ground::BUILD;
     }
@@ -76,7 +77,7 @@ void loop()
     break;
   
   case ECE496::Ground::BUILD:
-    ECE496::Utils::displayTextAndScroll("build");
+    //ECE496::Utils::displayTextAndScroll("build");
     ECE496::Utils::buildPacket(s_packet_buf, 1, 3, PACKET_SIZE, order);
     // assume success for now
     nextState = ECE496::Ground::SEND;
@@ -88,7 +89,7 @@ void loop()
     nextState = ECE496::Ground::RECEIVE;
 
   case ECE496::Ground::RECEIVE:
-    ECE496::Utils::displayTextAndScroll("receive");
+    //ECE496::Utils::displayTextAndScroll("receive");
     // wait for a response
     if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
     {
@@ -115,8 +116,9 @@ void loop()
     break;
 
   case ECE496::Ground::CLEAR:
-    ECE496::Utils::displayTextAndScroll("clear");
-    *order = 0x0000000000;
+    //ECE496::Utils::displayTextAndScroll("clear");
+    memset(order, 0x00, PACKET_SIZE);
+    while(1);
     nextState = ECE496::Ground::WAIT;
     break;
 
@@ -126,5 +128,5 @@ void loop()
     break;
   }
   State = nextState;
-  delay(500);
+  //delay(500);
 }
