@@ -84,7 +84,7 @@ void loop()
 
   case ECE496::Ground::RECEIVE:
     // wait for a response
-    if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME) == 1)
+    if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
     {
       int bytes_received =
         ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
@@ -94,13 +94,15 @@ void loop()
       {
         // found a drone station
         ECE496::Utils::displayText("Got ack from drone station");
+        nextState = ECE496::Ground::CLEAR;
       }
       else
       {
         Serial.print("Received unrecognized packet");
+        nextState = ECE496::Ground::SEND;
       }
+      nextState = ECE496::Ground::SEND;
     }
-    nextState = ECE496::Ground::CLEAR;
     break;
 
   case ECE496::Ground::CLEAR:
