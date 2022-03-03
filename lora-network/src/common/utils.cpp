@@ -21,7 +21,7 @@ uint8_t Utils::IV[IV_SIZE];
 
 bool Utils::sender;
 
-void Utils::begin(const char *id)
+void Utils::begin(char const *id)
 {
     chacha = ChaCha();
     RNG.begin(id);
@@ -67,7 +67,7 @@ void Utils::displayText(String s)
     if (DEBUG)
         Serial.print(s + "\n");
 }
-void Utils::displayText(char *text)
+void Utils::displayText(char const *text)
 {
     Heltec.display->clear();
     Heltec.display->drawString(0, 0, text);
@@ -79,7 +79,7 @@ void Utils::displayText(char *text)
     }
 }
 
-void Utils::displayTextAndScroll(char *text)
+void Utils::displayTextAndScroll(char const *text)
 {
     if (screenLines % 6 == 0)
     {
