@@ -34,6 +34,7 @@ namespace ECE496
 // packet buffers
 uint8_t r_packet_buf[PACKET_SIZE];
 uint8_t s_packet_buf[PACKET_SIZE];
+uint8_t order[PACKET_SIZE];
 String packet;
 
 ECE496::Ground::State State = ECE496::Ground::WAIT;
@@ -46,7 +47,7 @@ void setup()
   Serial.begin(115200);
   Serial.setTimeout(1);
 
-  ECE496::Utils::displayText("I am a ground station");
+  ECE496::Utils::displayTextAndScroll("I am a ground station");
 }
 
 void loop()
@@ -56,14 +57,15 @@ void loop()
   switch (State)
   {
   case ECE496::Ground::WAIT:
-    if (Serial.available() >= 10)
+    if (/*Serial.available() >= 10*/true)
     {
       //packet is received from CLI. its in string form of the int representation of the
       //packet. ie: if the packet was 0x11101 = 29, then packet is '29'
-      packet = Serial.readString();
-      Serial.print(packet);
-      Serial.println();
-
+      // packet = Serial.readString();
+      // Serial.print(packet);
+      // Serial.println();
+      *order = 0x0FFFFFFFFF;
+      ECE496::Utils::displayTextAndScroll("got an order");
       nextState = ECE496::Ground::BUILD;
     }
     else
@@ -73,12 +75,13 @@ void loop()
     break;
   
   case ECE496::Ground::BUILD:
-    ECE496::Utils::buildPacket(s_packet_buf, 1, 1, PACKET_SIZE);
+    ECE496::Utils::buildPacket(s_packet_buf, 1, 3, PACKET_SIZE, order);
     // assume success for now
     nextState = ECE496::Ground::SEND;
     break;
 
   case ECE496::Ground::SEND:
+    ECE496::Utils::displayTextAndScroll("sending a packet");
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
     nextState = ECE496::Ground::RECEIVE;
 
@@ -93,7 +96,7 @@ void loop()
       if (ECE496::Utils::getPacketStationType(r_packet_buf) == 3)
       {
         // found a drone station
-        ECE496::Utils::displayText("Got ack from drone station");
+        ECE496::Utils::displayTextAndScroll("Got ack from drone station");
         nextState = ECE496::Ground::CLEAR;
       }
       else
@@ -101,11 +104,14 @@ void loop()
         Serial.print("Received unrecognized packet");
         nextState = ECE496::Ground::SEND;
       }
+    }
+    else {
       nextState = ECE496::Ground::SEND;
     }
     break;
 
   case ECE496::Ground::CLEAR:
+    *order = 0x0000000000;
     nextState = ECE496::Ground::WAIT;
     break;
 

@@ -12,7 +12,7 @@
 
 #define BAND 915E6
 
-#define PACKET_SIZE 1
+#define PACKET_SIZE 5
 
 // packet buffers
 uint8_t r_packet_buf[PACKET_SIZE];
@@ -47,7 +47,7 @@ void loop()
 
     //communicating with ground station
     //introduce self to ground station
-    ECE496::Utils::buildPacket(s_packet_buf, 3, 1, PACKET_SIZE);
+    ECE496::Utils::buildPacket(s_packet_buf, 3, 1, PACKET_SIZE, NULL);
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
 
     //wait for a response

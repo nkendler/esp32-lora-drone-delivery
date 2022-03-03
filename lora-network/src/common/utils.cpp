@@ -327,10 +327,17 @@ void Utils::closeSession()
     memset(privateKey, 0, KEY_SIZE);
 }
 
-void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int packet_size)
+void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int packet_size, uint8_t *payload)
 {
-    // initiallize packet
-    buf[0] = 0x00;
+    // initialize packet
+    if (payload != NULL)
+    {
+        *buf = *payload;
+    }
+    else 
+    {
+        memset(buf, packet_size, 0);
+    }
 
     // 00 for ground
     // 01 for hospital
