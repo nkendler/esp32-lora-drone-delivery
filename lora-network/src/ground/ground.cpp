@@ -35,7 +35,6 @@ namespace ECE496
 uint8_t r_packet_buf[PACKET_SIZE];
 uint8_t s_packet_buf[PACKET_SIZE];
 uint8_t order[PACKET_SIZE];
-String packet;
 
 ECE496::Ground::State State = ECE496::Ground::WAIT;
 
@@ -58,14 +57,21 @@ void loop()
   {
   case ECE496::Ground::WAIT:
     ECE496::Utils::displayTextAndScroll("wait");
-    if (/*Serial.available() >= 10*/true)
+    if (Serial.available() == PACKET_SIZE) //wait for all bytes from packet to arrive serially
     {
-      //packet is received from CLI. its in string form of the int representation of the
-      //packet. ie: if the packet was 0x11101 = 29, then packet is '29'
-      // packet = Serial.readString();
-      // Serial.print(packet);
-      // Serial.println();
-      *order = 0x0FFFFFFFFF;
+      /*packet is received from CLI. its in byte array form and the packet is 5 bytes long
+      the byte array sends the first 8 bits and continues until the last 8 bits arrive
+      so if the order is 10741946436 = 0x0280451844, then the byte array will have
+      0x02 0x80 0x45 0x18 0x44 and order_buf will be 0x44 0x18 0x45 0x80 0x02 */
+      for (i = 0; i < PACKET_SIZE; i++) {
+        order[i] = Serial.read();
+        delay(100);
+        Serial.print("got byte ");
+        Serial.print(i);
+        Serial.print(" as ");
+        Serial.print(order[i]);
+        Serial.println();
+      }
       ECE496::Utils::displayTextAndScroll("got an order");
       nextState = ECE496::Ground::BUILD;
     }
