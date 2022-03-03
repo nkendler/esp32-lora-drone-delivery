@@ -12,7 +12,7 @@
 
 #define BAND 915E6
 
-#define PACKET_SIZE 1
+#define PACKET_SIZE 5
 #define PACKET_WAIT_TIME 5000
 
 namespace ECE496
@@ -47,7 +47,7 @@ void setup()
   Serial.begin(115200);
   Serial.setTimeout(1);
 
-  ECE496::Utils::displayTextAndScroll("I am a ground station");
+  // ECE496::Utils::displayTextAndScroll("I am a ground station");
 }
 
 void loop()
@@ -57,6 +57,7 @@ void loop()
   switch (State)
   {
   case ECE496::Ground::WAIT:
+    ECE496::Utils::displayTextAndScroll("wait");
     if (/*Serial.available() >= 10*/true)
     {
       //packet is received from CLI. its in string form of the int representation of the
@@ -75,17 +76,19 @@ void loop()
     break;
   
   case ECE496::Ground::BUILD:
+    ECE496::Utils::displayTextAndScroll("build");
     ECE496::Utils::buildPacket(s_packet_buf, 1, 3, PACKET_SIZE, order);
     // assume success for now
     nextState = ECE496::Ground::SEND;
     break;
 
   case ECE496::Ground::SEND:
-    ECE496::Utils::displayTextAndScroll("sending a packet");
+    ECE496::Utils::displayTextAndScroll("send");
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
     nextState = ECE496::Ground::RECEIVE;
 
   case ECE496::Ground::RECEIVE:
+    ECE496::Utils::displayTextAndScroll("receive");
     // wait for a response
     if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
     {
@@ -108,9 +111,11 @@ void loop()
     else {
       nextState = ECE496::Ground::SEND;
     }
+    // while(1);
     break;
 
   case ECE496::Ground::CLEAR:
+    ECE496::Utils::displayTextAndScroll("clear");
     *order = 0x0000000000;
     nextState = ECE496::Ground::WAIT;
     break;
@@ -120,4 +125,6 @@ void loop()
     nextState = ECE496::Ground::WAIT;
     break;
   }
+  State = nextState;
+  delay(500);
 }
