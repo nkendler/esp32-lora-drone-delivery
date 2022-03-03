@@ -95,14 +95,10 @@ void Utils::displayTextAndScroll(char *text)
 }
 
 // send an encrypted packet
-void Utils::sendPacket(String s)
+void Utils::sendPacket(char const* s, int size)
 {
-    // convert the input String to an array of bytes
-    uint8_t message[s.length() + 1];
-    s.toCharArray((char *)message, s.length() + 1);
-
     // send the message to the recipient in ciphertext
-    sendCipher(message, s.length() + 1);
+    sendCipher((uint8_t*)s, size);
 }
 
 void Utils::sendUnencryptedPacket(uint8_t *buf, int packet_size)
@@ -154,15 +150,11 @@ void Utils::decrypt(uint8_t *input, size_t size)
     chacha.decrypt(input, input, size);
 }
 
-// recieve an encrypted packet
-String Utils::recievePacket()
+// receive an encrypted packet
+void Utils::receivePacket(char *buf)
 {
-    // recieve ciphertext message and decrypt it to cleartext
-    uint8_t coded[LoRa.available()];
-    recieveCipher(coded, LoRa.available());
-
-    // return message as a String
-    return String((char *)coded);
+    // receive ciphertext message and decrypt it to cleartext
+    receiveCipher((uint8_t*)buf, LoRa.available());
 }
 
 // reads up to packet_size bytes into the buffer
@@ -180,14 +172,14 @@ int Utils::receiveUnencryptedPacket(uint8_t *buf, int packet_size)
 }
 
 // read cleartext message
-void Utils::recieveClear(uint8_t *buf, size_t size)
+void Utils::receiveClear(uint8_t *buf, size_t size)
 {
     LoRa.readBytes(buf, size);
-    logHex("Recieved clear: ", buf, size);
+    logHex("Received clear: ", buf, size);
 }
 
 // read ciphertext message and decrypt it into cleartext
-void Utils::recieveCipher(uint8_t *buf, size_t size)
+void Utils::receiveCipher(uint8_t *buf, size_t size)
 {
     LoRa.readBytes(buf, size);
     logHex("Coded: ", buf, size);
@@ -266,7 +258,7 @@ bool Utils::isSender()
     return Utils::sender;
 }
 
-bool Utils::isReciever()
+bool Utils::isReceiver()
 {
     return !Utils::sender;
 }
@@ -292,10 +284,10 @@ void Utils::initSession(bool sender)
         awaitPacket();
     }
 
-    // recieve foreign public key from sender
-    recieveClear(f_publicKey, KEY_SIZE);
+    // receive foreign public key from sender
+    receiveClear(f_publicKey, KEY_SIZE);
 
-    if (isReciever())
+    if (isReceiver())
     {
         // reply with our public key for generating our shared secret
         sendClear(publicKey, KEY_SIZE);
@@ -308,15 +300,15 @@ void Utils::initSession(bool sender)
 
     if (isSender())
     {
-        // generate IV for encryption with ChaCha and send to reciever
+        // generate IV for encryption with ChaCha and send to receiver
         generateIV();
         sendClear(IV, IV_SIZE);
     }
     else
     {
-        // recieve IV/Nonce from sender to be used in our ChaCha20
+        // receive IV/Nonce from sender to be used in our ChaCha20
         awaitPacket();
-        recieveClear(IV, IV_SIZE);
+        receiveClear(IV, IV_SIZE);
         logHex("IV: ", IV, IV_SIZE);
     }
     chacha.setIV(IV, IV_SIZE);
@@ -334,10 +326,17 @@ void Utils::closeSession()
     memset(privateKey, 0, KEY_SIZE);
 }
 
-void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int packet_size)
+void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int packet_size, uint8_t *payload)
 {
-    // initiallize packet
-    buf[0] = 0x00;
+    // initialize packet
+    if (payload != NULL)
+    {
+        *buf = *payload;
+    }
+    else 
+    {
+        memset(buf, packet_size, 0);
+    }
 
     // 00 for ground
     // 01 for hospital
