@@ -30,11 +30,10 @@ namespace ECE496
         static String recievePacket();
         static void sendPacket(String s);
         static void sendUnencryptedPacket(uint8_t *buf, int pakcet_size);
-        static void displayText(String s);
-        static void displayText(char *text);
-        static void displayTextAndScroll(char *text);
+        static void displayText(char const *text);
+        static void displayTextAndScroll(char const *text);
         static void logHex(String n, uint8_t *s, size_t size);
-        static void begin(const char *id);
+        static void begin(char const *id);
         static void initSession(bool sender);
         static void closeSession();
         static bool isSender();
@@ -46,6 +45,7 @@ namespace ECE496
         static int getPacketType(uint8_t *buf);
 
     private:
+        static void displayText(String s);
         static void allocateEntropy(size_t size);
         static void generateKeys();
         static void generateIV();
