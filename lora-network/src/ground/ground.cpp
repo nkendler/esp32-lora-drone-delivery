@@ -47,7 +47,7 @@ void setup()
   Serial.begin(115200);
   Serial.setTimeout(1);
 
-  // ECE496::Utils::displayTextAndScroll("I am a ground station");
+  ECE496::Utils::displayTextAndScroll("I am a ground station");
 }
 
 void loop()
@@ -89,7 +89,7 @@ void loop()
     break;
 
   case ECE496::Ground::SEND:
-    ECE496::Utils::displayTextAndScroll("send");
+    ECE496::Utils::displayTextAndScroll("sending packet");
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
     nextState = ECE496::Ground::RECEIVE;
 
@@ -102,7 +102,8 @@ void loop()
         ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
       
       // make sure packet is from a drone station
-      if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE)
+      if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE &&
+        ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK)
       {
         // found a drone station
         ECE496::Utils::displayTextAndScroll("Got ack from drone station");
@@ -117,13 +118,11 @@ void loop()
     else {
       nextState = ECE496::Ground::SEND;
     }
-    // while(1);
     break;
 
   case ECE496::Ground::CLEAR:
     //ECE496::Utils::displayTextAndScroll("clear");
     memset(order, 0x00, PACKET_SIZE);
-    while(1);
     nextState = ECE496::Ground::WAIT;
     break;
 
