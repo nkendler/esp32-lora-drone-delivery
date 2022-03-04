@@ -46,21 +46,22 @@ void setup()
   Heltec.begin(true, true, true, true, BAND);
   delay(2000);
 
-  ECE496::Utils::displayTextAndScroll("I am a drone station");
+  ECE496::Utils::displayTextAndScroll("I am a drone station.");
 }
 
 void loop()
 {
-  ECE496::Utils::displayTextAndScroll("Waiting for packets");
+  ECE496::Utils::displayTextAndScroll("Waiting for packets.");
   //Listen for packets
   ECE496::Utils::awaitPacket();
 
   //Process incoming packets
   int bytes_received = 
     ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+  ECE496::Utils::logHex("r packet: ", r_packet_buf, PACKET_SIZE);
   // first byte should be 0x00 to introduce a hospital station
   //                      0xFF                ground station
-  if (ECE496::Utils::getPacketStationType(r_packet_buf) == 2)
+  if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::HOSPITAL)
   {
     //communicating with hospital station
     //TODO:
@@ -68,7 +69,7 @@ void loop()
   else if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::GROUND &&
     ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::PAYLOAD)
   {
-    ECE496::Utils::displayTextAndScroll("I found a ground station!");
+    ECE496::Utils::displayTextAndScroll("Packet detected from ground station.");
 
     if (Drone->addOrder(r_packet_buf))
     {
@@ -76,12 +77,12 @@ void loop()
       ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::DRONE, ECE496::Utils::ACK, PACKET_SIZE, NULL);
       ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
 
-      ECE496::Utils::logHex("stored packet: ", r_packet_buf, PACKET_SIZE);
+      ECE496::Utils::logHex("Stored packet: ", r_packet_buf, PACKET_SIZE);
     }
 
   }
   else
   {
-    Serial.print("Received unrecognized packet");
+    Serial.print("Received ill-formed packet.");
   }
 }
