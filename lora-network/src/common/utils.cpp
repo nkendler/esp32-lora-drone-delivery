@@ -394,6 +394,6 @@ Utils::PacketType Utils::getPacketType(uint8_t *buf)
     case 0b00100000:
         return PAYLOAD;
     default:
-        return Utils::PacketType::ERROR;
+        return Utils::PacketType::PERROR;
     }
 }

@@ -55,7 +55,7 @@ namespace ECE496
             HELLO = 1,
             ACK,
             PAYLOAD,
-            ERROR
+            PERROR
         };
 
         static Utils::StationType getPacketStationType(uint8_t *buf);
