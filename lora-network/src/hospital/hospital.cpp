@@ -20,7 +20,7 @@ namespace ECE496
 {
   class Hospital
   {
-      uint8_t orders_buf[MAX_ORDERS][PACKET_SIZE] = { { NULL } };
+      uint8_t orders_buf[MAX_ORDERS][PACKET_SIZE] = { { 0 } };
       uint8_t total_mem = MAX_ORDERS * PACKET_SIZE;
       uint8_t num_order = 0;
   public:
@@ -83,7 +83,7 @@ void loop()
   
         case ECE496::Hospital::CONNECT:
             //build hello packet
-            ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::HOSPITAL, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
+            ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
             //send packet
             ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
             //wait to receive something back
@@ -116,6 +116,8 @@ void loop()
             //receive encrypted packet
             ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
             // TO DO: unencrypt to find order num
+            //lowest 3 bits of buff[0] have ordernum
+            orders_to_receive = r_packet_buf[0] & 0b111;
             // TO DO: set orders_to_receive
             nextState = ECE496::Hospital::RECEIVEORDERS;
             break;
