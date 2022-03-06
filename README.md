@@ -5,6 +5,7 @@
 3. draw.io integration - https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio
 
 ## Steps to start python environment
+(to do once: create environment using command: virtualenv venv)
 1. source venv/bin/activate
 2. python3 -m pip install -r requirements.txt
 3. python3 run.py
