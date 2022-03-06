@@ -7,3 +7,4 @@ lora-network/.pio/build
 lora-network/.pio/libdeps
 python/venv
 *.icloud
+.DS_Store

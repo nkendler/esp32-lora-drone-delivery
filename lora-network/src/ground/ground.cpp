@@ -47,7 +47,7 @@ void setup()
   Serial.begin(115200);
   Serial.setTimeout(1);
 
-  // ECE496::Utils::displayTextAndScroll("I am a ground station");
+  ECE496::Utils::displayTextAndScroll("I am a ground station.");
 }
 
 void loop()
@@ -57,7 +57,6 @@ void loop()
   switch (State)
   {
   case ECE496::Ground::WAIT:
-    //ECE496::Utils::displayTextAndScroll("wait");
     if (Serial.available() == PACKET_SIZE) //wait for all bytes from packet to arrive serially
     {
       /*packet is received from CLI. its in byte array form and the packet is 5 bytes long
@@ -69,7 +68,7 @@ void loop()
         delay(100);
       }
 
-      ECE496::Utils::displayTextAndScroll("got an order");
+      ECE496::Utils::displayTextAndScroll("Received an order upload.");
       nextState = ECE496::Ground::BUILD;
     }
     else
@@ -79,59 +78,52 @@ void loop()
     break;
   
   case ECE496::Ground::BUILD:
-    //ECE496::Utils::displayTextAndScroll("build");
     ECE496::Utils::buildPacket(s_packet_buf,
                                ECE496::Utils::GROUND, ECE496::Utils::PAYLOAD,
                                PACKET_SIZE, order);
-
     // assume success for now
     nextState = ECE496::Ground::SEND;
     break;
 
   case ECE496::Ground::SEND:
-    ECE496::Utils::displayTextAndScroll("send");
+    ECE496::Utils::displayTextAndScroll("Sending packet.");
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
     nextState = ECE496::Ground::RECEIVE;
 
   case ECE496::Ground::RECEIVE:
-    //ECE496::Utils::displayTextAndScroll("receive");
     // wait for a response
     if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
     {
-      int bytes_received =
-        ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+      ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
       
       // make sure packet is from a drone station
-      if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE)
+      if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE &&
+        ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK)
       {
         // found a drone station
-        ECE496::Utils::displayTextAndScroll("Got ack from drone station");
+        ECE496::Utils::displayTextAndScroll("Got ACK from drone.");
         nextState = ECE496::Ground::CLEAR;
       }
       else
       {
-        Serial.print("Received unrecognized packet");
+        Serial.print("Received ill-formed packet.");
         nextState = ECE496::Ground::SEND;
       }
     }
     else {
       nextState = ECE496::Ground::SEND;
     }
-    // while(1);
     break;
 
   case ECE496::Ground::CLEAR:
-    //ECE496::Utils::displayTextAndScroll("clear");
     memset(order, 0x00, PACKET_SIZE);
-    while(1);
     nextState = ECE496::Ground::WAIT;
     break;
 
   default:
-    Serial.println("This shouldn't happen");
-    nextState = ECE496::Ground::WAIT;
+    Serial.println("This shouldn't happen.");
+    while(1);
     break;
   }
   State = nextState;
-  //delay(500);
 }

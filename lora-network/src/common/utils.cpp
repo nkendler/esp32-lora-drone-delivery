@@ -345,7 +345,7 @@ void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int pac
         buf[0] |= 0b01000000;
         break;
     case DRONE:
-        buf[0] |= 0x10000000;
+        buf[0] |= 0b10000000;
         break;
     }
 
@@ -355,10 +355,10 @@ void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int pac
     case HELLO:
         break;
     case ACK:
-        buf[0] |= 0x00010000;
+        buf[0] |= 0b00010000;
         break;
     case PAYLOAD:
-        buf[0] |= 0x00100000;
+        buf[0] |= 0b00100000;
     }
 }
 
