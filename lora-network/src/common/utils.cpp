@@ -324,7 +324,7 @@ void Utils::closeSession()
     memset(privateKey, 0, KEY_SIZE);
 }
 
-void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int packet_size, uint8_t *payload)
+void Utils::buildPacket(uint8_t *buf, int packet_type, int packet_size, uint8_t *payload)
 {
     // init packet to payload, otherwise fill it with zeroes
     if (payload != NULL)
@@ -337,17 +337,14 @@ void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int pac
     }
 
     // add station information to front two bits to packet
-    switch (station_type)
-    {
-    case GROUND:
-        break;
-    case HOSPITAL:
-        buf[0] |= 0b01000000;
-        break;
-    case DRONE:
-        buf[0] |= 0b10000000;
-        break;
-    }
+#ifdef GROUND_STATION
+#endif
+#ifdef HOSPITAL_STATION
+    buf[0] |= 0b01000000;
+#endif
+#ifdef DRONE_STATION
+    buf[0] |= 0b10000000;
+#endif
 
     // add packet type information to third and fourth bits of the packet
     switch (packet_type)

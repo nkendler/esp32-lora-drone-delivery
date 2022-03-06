@@ -76,8 +76,7 @@ void loop()
     break;
   
   case ECE496::Ground::BUILD:
-    ECE496::Utils::buildPacket(s_packet_buf,
-                               ECE496::Utils::GROUND, ECE496::Utils::PAYLOAD,
+    ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::PAYLOAD,
                                PACKET_SIZE, order);
     // assume success for now
     NextState = ECE496::Ground::SEND;
