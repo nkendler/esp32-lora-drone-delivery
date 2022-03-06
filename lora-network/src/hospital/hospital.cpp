@@ -82,7 +82,7 @@ void loop()
             break;
   
         case ECE496::Hospital::CONNECT:
-            //build packet
+            //build hello packet
             ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::HOSPITAL, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
             //send packet
             ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);

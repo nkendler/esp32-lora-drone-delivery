@@ -373,7 +373,7 @@ Utils::StationType Utils::getPacketStationType(uint8_t *buf)
     case 0b10000000:
         return DRONE;
     default:
-        return Utils::StationType::ERROR;
+        return UNKNOWN;
     }
 }
 
@@ -391,6 +391,6 @@ Utils::PacketType Utils::getPacketType(uint8_t *buf)
     case 0b00100000:
         return PAYLOAD;
     default:
-        return Utils::PacketType::PERROR;
+        return ERROR;
     }
 }
