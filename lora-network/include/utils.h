@@ -39,15 +39,14 @@ namespace ECE496
         static bool isSender();
         static bool isReceiver();
         static int  receiveUnencryptedPacket(uint8_t *buf, int packet_size);
-        static void buildPacket
-            (uint8_t *buf, int station_type, int packet_type, int packet_size, uint8_t *payload);
+        static void buildPacket(uint8_t *buf, int packet_type, int packet_size, uint8_t *payload);
 
         enum StationType
         {
             GROUND = 1,
             HOSPITAL,
             DRONE,
-            ERROR
+            UNKNOWN
         };
 
         enum PacketType
@@ -55,7 +54,7 @@ namespace ECE496
             HELLO = 1,
             ACK,
             PAYLOAD,
-            PERROR
+            ERROR
         };
 
         static Utils::StationType getPacketStationType(uint8_t *buf);
