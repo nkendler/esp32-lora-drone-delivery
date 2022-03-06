@@ -85,28 +85,28 @@ class SheetParser():
         print("Packet now looks like") 
         print(self.Packet)
 
-    def decode_to_packet(order, self):
+    def decode_to_packet(self, order):
         #order is an int
         
-        self.RuralStation = (self.Packet & 0x31)
-        self.Packet = self.Packet >> 6
+        self.RuralStation = (order & 0x3f) #49 is 6 bits so and with 0b11 1111 = 0x3f to get value
+        order = order >> 6
 
-        self.ItemOne = (self.Packet & 0x18)
-        self.Packet = self.Packet >> 5
+        self.ItemOne = (order & 0x1f) #0x1 1111 = 0x1f
+        order = order >> 5
 
-        self.ItemTwo = (self.Packet & 0x18)
-        self.Packet = self.Packet >> 5
+        self.ItemTwo = (order & 0x1f)
+        order = order >> 5
 
-        self.ItemThree = (self.Packet & 0x18)
-        self.Packet = self.Packet >> 5
+        self.ItemThree = (order & 0x1f)
+        order = order >> 5
 
-        self.ItemFour = (self.Packet & 0x18)
-        self.Packet = self.Packet >> 5
+        self.ItemFour = (order & 0x1f)
+        order = order >> 5
 
-        self.ItemFive = (self.Packet & 0x18)
-        self.Packet = self.Packet >> 5
+        self.ItemFive = (order & 0x1f)
+        order = order >> 5
 
-        self.ItemSix = (self.Packet & 0x18)
+        self.ItemSix = (order & 0x1f)
 
     def send(self):
         #note: port changes based on wire connected to computer...
@@ -145,5 +145,4 @@ if __name__ == "__main__":
     sp.parse_data()
     sp.check_valid()
     sp.encode_to_packet()
-    #encrypt
     sp.send()
