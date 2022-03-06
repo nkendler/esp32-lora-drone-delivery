@@ -13,6 +13,7 @@
 #define BAND 915E6
 
 #define PACKET_SIZE 5
+#define PACKET_WAIT_TIME 5000
 #define MAX_ORDERS 5
 
 // packet buffers
@@ -36,10 +37,23 @@ namespace ECE496
       }
       else return 0;
     };
+    enum State
+    {
+      WAIT = 0,
+      RECEIVE,
+      VERIFY,
+      CLEAR,
+      UPLOAD,
+      STORE,
+      RESPOND
+    };
   };
 } 
 
 ECE496::Drone *Drone = new ECE496::Drone();
+
+ECE496::Drone::State State = ECE496::Drone::WAIT;
+ECE496::Drone::State NextState;
 
 void setup()
 {
@@ -51,38 +65,77 @@ void setup()
 
 void loop()
 {
-  ECE496::Utils::displayTextAndScroll("Waiting for packets.");
-  //Listen for packets
-  ECE496::Utils::awaitPacket();
+  switch (State)
+  {
+  case ECE496::Drone::WAIT:
+    ECE496::Utils::displayTextAndScroll("Waiting for packets.");
+    //Listen for packets
+    if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
+    {
+      NextState = ECE496::Drone::RECEIVE;
+    }
+    else
+    {
+      NextState = ECE496::Drone::WAIT;
+    }
+    break;
 
-  //Process incoming packets
-  int bytes_received = 
+  case ECE496::Drone::RECEIVE:
+    ECE496::Utils::displayTextAndScroll("Got a packet.");
+    //Process incoming packets
     ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
-  ECE496::Utils::logHex("r packet: ", r_packet_buf, PACKET_SIZE);
-  // first byte should be 0x00 to introduce a hospital station
-  //                      0xFF                ground station
-  if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::HOSPITAL)
-  {
-    //communicating with hospital station
-    //TODO:
-  }
-  else if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::GROUND &&
-    ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::PAYLOAD)
-  {
-    ECE496::Utils::displayTextAndScroll("Packet detected from ground station.");
+    ECE496::Utils::logHex("r packet: ", r_packet_buf, PACKET_SIZE);
+    NextState = ECE496::Drone::VERIFY;
+    break;
 
+  case ECE496::Drone::VERIFY:
+    if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::HOSPITAL &&
+      ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK)
+    {
+      ECE496::Utils::displayTextAndScroll("ACK detected from hospital");
+      NextState = ECE496::Drone::CLEAR;
+    }
+    else if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::HOSPITAL &&
+      ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::HELLO)
+    {
+      ECE496::Utils::displayTextAndScroll("HELLO detected from hospital");
+      NextState = ECE496::Drone::UPLOAD;
+    }
+    else if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::GROUND &&
+      ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::PAYLOAD)
+    {
+      ECE496::Utils::displayTextAndScroll("Packet detected from ground station.");
+      NextState = ECE496::Drone::STORE;
+    }
+    else //unrecognized packet
+    {
+      ECE496::Utils::displayTextAndScroll("Received ill-formed packet.");
+      NextState = ECE496::Drone::WAIT;
+    }
+    break;
+
+  case ECE496::Drone::STORE:
     if (Drone->addOrder(r_packet_buf))
     {
-      // send an ack
-      ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::DRONE, ECE496::Utils::ACK, PACKET_SIZE, NULL);
-      ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
-
       ECE496::Utils::logHex("Stored packet: ", r_packet_buf, PACKET_SIZE);
+      NextState = ECE496::Drone::RESPOND;
     }
+    else
+    {
+      NextState = ECE496::Drone::WAIT;
+    }
+    break;
 
+  case ECE496::Drone::RESPOND:
+    // send an ack
+    ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::DRONE, ECE496::Utils::ACK, PACKET_SIZE, NULL);
+    ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
+    break;
+
+  default:
+    Serial.println("This shouldn't happen.");
+    while(1);
+    break;
   }
-  else
-  {
-    Serial.print("Received ill-formed packet.");
-  }
+  State = NextState;
 }

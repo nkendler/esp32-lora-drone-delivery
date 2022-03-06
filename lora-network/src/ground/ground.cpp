@@ -37,6 +37,7 @@ uint8_t s_packet_buf[PACKET_SIZE];
 uint8_t order[PACKET_SIZE];
 
 ECE496::Ground::State State = ECE496::Ground::WAIT;
+ECE496::Ground::State NextState; 
 
 int i;
 
@@ -51,8 +52,6 @@ void setup()
 
 void loop()
 {
-  ECE496::Ground::State nextState; 
-
   switch (State)
   {
   case ECE496::Ground::WAIT:
@@ -68,11 +67,11 @@ void loop()
       }
 
       ECE496::Utils::displayTextAndScroll("Received an order upload.");
-      nextState = ECE496::Ground::BUILD;
+      NextState = ECE496::Ground::BUILD;
     }
     else
     {
-      nextState = ECE496::Ground::WAIT;
+      NextState = ECE496::Ground::WAIT;
     }
     break;
   
@@ -81,13 +80,13 @@ void loop()
                                ECE496::Utils::GROUND, ECE496::Utils::PAYLOAD,
                                PACKET_SIZE, order);
     // assume success for now
-    nextState = ECE496::Ground::SEND;
+    NextState = ECE496::Ground::SEND;
     break;
 
   case ECE496::Ground::SEND:
     ECE496::Utils::displayTextAndScroll("Sending packet.");
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
-    nextState = ECE496::Ground::RECEIVE;
+    NextState = ECE496::Ground::RECEIVE;
 
   case ECE496::Ground::RECEIVE:
     // wait for a response
@@ -101,22 +100,22 @@ void loop()
       {
         // found a drone station
         ECE496::Utils::displayTextAndScroll("Got ACK from drone.");
-        nextState = ECE496::Ground::CLEAR;
+        NextState = ECE496::Ground::CLEAR;
       }
       else
       {
         Serial.print("Received ill-formed packet.");
-        nextState = ECE496::Ground::SEND;
+        NextState = ECE496::Ground::SEND;
       }
     }
     else {
-      nextState = ECE496::Ground::SEND;
+      NextState = ECE496::Ground::SEND;
     }
     break;
 
   case ECE496::Ground::CLEAR:
     memset(order, 0x00, PACKET_SIZE);
-    nextState = ECE496::Ground::WAIT;
+    NextState = ECE496::Ground::WAIT;
     break;
 
   default:
@@ -124,5 +123,5 @@ void loop()
     while(1);
     break;
   }
-  State = nextState;
+  State = NextState;
 }
