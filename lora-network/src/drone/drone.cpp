@@ -130,6 +130,7 @@ void loop()
     // send an ack
     ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::DRONE, ECE496::Utils::ACK, PACKET_SIZE, NULL);
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
+    NextState = ECE496::Drone::WAIT;
     break;
 
   default:
