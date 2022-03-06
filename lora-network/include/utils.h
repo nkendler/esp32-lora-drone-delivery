@@ -34,10 +34,8 @@ namespace ECE496
         static void displayTextAndScroll(char const *text);
         static void logHex(String n, uint8_t *s, size_t size);
         static void begin(char const *id);
-        static void initSession(bool sender);
+        static void initSession();
         static void closeSession();
-        static bool isSender();
-        static bool isReceiver();
         static int  receiveUnencryptedPacket(uint8_t *buf, int packet_size);
         static void buildPacket(uint8_t *buf, int packet_type, int packet_size, uint8_t *payload);
 
@@ -73,7 +71,6 @@ namespace ECE496
         static void encrypt(uint8_t *input, size_t size);
         static void decrypt(uint8_t *input, size_t size);
 
-        static bool sender;
         static unsigned int screenLines;
         static uint8_t publicKey[KEY_SIZE];
         static uint8_t privateKey[KEY_SIZE];

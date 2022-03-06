@@ -18,13 +18,10 @@ uint8_t Utils::f_publicKey[KEY_SIZE];
 uint8_t Utils::sharedKey[KEY_SIZE];
 uint8_t Utils::IV[IV_SIZE];
 
-bool Utils::sender;
-
 void Utils::begin(char const *id)
 {
     chacha = ChaCha();
     RNG.begin(id);
-    sender = false;
 }
 
 // generate public-private key pair using ECDH
@@ -251,21 +248,9 @@ void Utils::allocateEntropy(size_t size)
         ;
 }
 
-bool Utils::isSender()
+void Utils::initSession()
 {
-    return Utils::sender;
-}
-
-bool Utils::isReceiver()
-{
-    return !Utils::sender;
-}
-
-void Utils::initSession(bool sender)
-{
-    // determine if we are a sender
-    Utils::sender = sender;
-
+    /*
     // generate public/private key pair
     generateKeys();
     displayText("Generated keys!");
@@ -309,13 +294,12 @@ void Utils::initSession(bool sender)
         receiveClear(IV, IV_SIZE);
         logHex("IV: ", IV, IV_SIZE);
     }
-    chacha.setIV(IV, IV_SIZE);
+    chacha.setIV(IV, IV_SIZE);*/
 }
 
 // destroys all cryptographically-sensitive information from the session
 void Utils::closeSession()
 {
-    sender = false;
     chacha.clear();
     memset(IV, 0, IV_SIZE);
     memset(f_publicKey, 0, KEY_SIZE);
