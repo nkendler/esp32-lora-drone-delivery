@@ -3,4 +3,5 @@
 .vscode/launch.json
 .vscode/ipch
 python/venv
+python/__pycache__
 *.icloud
