@@ -365,7 +365,7 @@ void Utils::buildPacket(uint8_t *buf, int station_type, int packet_type, int pac
 Utils::StationType Utils::getPacketStationType(uint8_t *buf)
 {
     uint8_t header = buf[0];
-    header &= 0x11000000;
+    header &= 0b11000000;
 
     switch (header)
     {
