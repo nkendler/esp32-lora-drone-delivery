@@ -5,8 +5,6 @@ import time, os, sys, serial
 from serial import Serial
 import serial.tools.list_ports as ports
 
-from order_receiver import OrderReceiver
-
 class OrderReceiver():
     """
     GENERAL FLOW
@@ -26,16 +24,30 @@ class OrderReceiver():
         self.packet_list = []
     
     def get_packet_from_serial(self):
-        pass
+        sample_packet = [0x02, 0x80, 0x45, 0x18, 0x44]
+        self.packet_list.append(sample_packet)
+        #FINAL PACKET SHOULD BE 0x0280451844
+        
 
     def decode_order_line(self, order_line):
-        pass
+        #print(len(order_line))
+        for i, byter_manz in enumerate(order_line):
+            new_shift = (byter_manz) << (8 * (len(order_line) -i - 1))
+            if i == 0:
+                new_value = new_shift
+            else:
+                new_value = new_value | new_shift    
+        return new_value
+
 
     def format_packet_into_df(self):
+        self.get_packet_from_serial()
         while len(self.packet_list) > 0:
             order_line = self.packet_list.pop(0)
             df_row = self.decode_order_line(order_line)
-            
+            print(hex(df_row))
 
+if __name__ == "__main__":
+    odr = OrderReceiver()
+    odr.format_packet_into_df()
 
-    def 
