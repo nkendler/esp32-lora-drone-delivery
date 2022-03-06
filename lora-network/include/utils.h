@@ -38,6 +38,9 @@ namespace ECE496
         static void closeSession();
         static int  receiveUnencryptedPacket(uint8_t *buf, int packet_size);
         static void buildPacket(uint8_t *buf, int packet_type, int packet_size, uint8_t *payload);
+        static void generateKeys();
+        static void generateIV();
+        static void generateSecret();
 
         enum StationType
         {
@@ -58,12 +61,16 @@ namespace ECE496
         static Utils::StationType getPacketStationType(uint8_t *buf);
         static Utils::PacketType getPacketType(uint8_t *buf);
 
+        static uint8_t publicKey[KEY_SIZE];
+        static uint8_t privateKey[KEY_SIZE];
+        static uint8_t f_publicKey[KEY_SIZE];
+        static uint8_t sharedKey[KEY_SIZE];
+        static uint8_t IV[IV_SIZE];
+        static ChaCha chacha;
+
     private:
-        static void displayText(String s);
         static void allocateEntropy(size_t size);
-        static void generateKeys();
-        static void generateIV();
-        static void generateSecret();
+        static void displayText(String s);
         static void sendClear(uint8_t *buf, size_t size);
         static void receiveClear(uint8_t *buf, size_t size);
         static void sendCipher(uint8_t *buf, size_t size);
@@ -72,12 +79,6 @@ namespace ECE496
         static void decrypt(uint8_t *input, size_t size);
 
         static unsigned int screenLines;
-        static uint8_t publicKey[KEY_SIZE];
-        static uint8_t privateKey[KEY_SIZE];
-        static uint8_t f_publicKey[KEY_SIZE];
-        static uint8_t sharedKey[KEY_SIZE];
-        static uint8_t IV[IV_SIZE];
-        static ChaCha chacha;
     };
 }
 

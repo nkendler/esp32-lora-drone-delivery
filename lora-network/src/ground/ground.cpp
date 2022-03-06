@@ -25,6 +25,9 @@ namespace ECE496
       CLEAR = 0,
       WAIT,
       BUILD,
+      ADVERTISE,
+      EXCHANGE,
+      IV,
       SEND,
       RECEIVE 
     };
@@ -34,12 +37,13 @@ namespace ECE496
 // packet buffers
 uint8_t r_packet_buf[PACKET_SIZE];
 uint8_t s_packet_buf[PACKET_SIZE];
-uint8_t order[PACKET_SIZE];
+uint8_t order[PACKET_SIZE] = {0};
 
 ECE496::Ground::State State = ECE496::Ground::WAIT;
 ECE496::Ground::State NextState; 
 
 int i;
+bool has_order = false;
 
 void setup()
 {
@@ -67,10 +71,12 @@ void loop()
       }
 
       ECE496::Utils::displayTextAndScroll("Received an order upload.");
+      has_order = true;
+    }
+    if (has_order) {
       NextState = ECE496::Ground::BUILD;
     }
-    else
-    {
+    else {
       NextState = ECE496::Ground::WAIT;
     }
     break;
@@ -79,7 +85,64 @@ void loop()
     ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::PAYLOAD,
                                PACKET_SIZE, order);
     // assume success for now
-    NextState = ECE496::Ground::SEND;
+    NextState = ECE496::Ground::ADVERTISE;
+    break;
+
+  case ECE496::Ground::ADVERTISE:
+      {
+        uint8_t hello_buffer[PACKET_SIZE];
+        ECE496::Utils::buildPacket(hello_buffer, ECE496::Utils::HELLO,PACKET_SIZE, NULL);
+        ECE496::Utils::sendUnencryptedPacket(hello_buffer, PACKET_SIZE);
+        if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+          uint8_t reply[PACKET_SIZE];
+          ECE496::Utils::receiveUnencryptedPacket(reply, PACKET_SIZE);
+          if (ECE496::Utils::getPacketType(reply) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(reply) == ECE496::Utils::DRONE) {
+            NextState = ECE496::Ground::EXCHANGE;
+          }
+          else {
+            NextState = ECE496::Ground::WAIT;
+          }
+        }
+        else {
+          NextState = ECE496::Ground::WAIT;
+        }
+      }
+    break;
+
+  case ECE496::Ground::EXCHANGE:
+      {
+        ECE496::Utils::generateKeys();
+        ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::publicKey, KEY_SIZE);
+        if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+          ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::f_publicKey, KEY_SIZE);
+          NextState = ECE496::Ground::IV;
+        }
+        else {
+          NextState = ECE496::Ground::WAIT;
+        }
+      }
+    break;
+
+  case ECE496::Ground::IV:
+      {
+        ECE496::Utils::generateIV();
+        ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
+        if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
+        {
+          ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+          if (ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE)
+          {
+            NextState = ECE496::Ground::SEND;
+          }
+          else {
+            NextState = ECE496::Ground::WAIT;
+          }
+        }
+        else
+        {
+          NextState = ECE496::Ground::WAIT;
+        }
+      }
     break;
 
   case ECE496::Ground::SEND:
@@ -115,6 +178,7 @@ void loop()
   case ECE496::Ground::CLEAR:
     memset(order, 0x00, PACKET_SIZE);
     NextState = ECE496::Ground::WAIT;
+    has_order = false;
     break;
 
   default:
