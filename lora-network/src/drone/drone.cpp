@@ -63,8 +63,10 @@ void setup() {
 
 void loop() {
     switch (State) {
-        case ECE496::Drone::WAIT:
-            ECE496::Utils::displayTextAndScroll("WAIT");
+        case ECE496::Drone::WAIT: {
+            if (DEBUG) {
+                ECE496::Utils::displayTextAndScroll("WAIT");
+            }
 
             // Listen for packets, if we get one, head to RECEIVE
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
@@ -73,19 +75,23 @@ void loop() {
                 NextState = ECE496::Drone::WAIT;
             }
             break;
+        }
 
-        case ECE496::Drone::RECEIVE:
-            if (DEBUG)
+        case ECE496::Drone::RECEIVE: {
+            if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("RECEIVE");
+            }
 
             // Process incoming packets
             ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
             NextState = ECE496::Drone::VERIFY;
             break;
+        }
 
-        case ECE496::Drone::VERIFY:
-            if (DEBUG)
+        case ECE496::Drone::VERIFY: {
+            if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("VERIFY");
+            }
 
             if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::HOSPITAL && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
                 ECE496::Utils::displayTextAndScroll("ACK detected from hospital");
@@ -107,40 +113,42 @@ void loop() {
                 NextState = ECE496::Drone::WAIT;
             }
             break;
+        }
 
-        case ECE496::Drone::GROUND_EXCHANGE:
-            if (DEBUG)
+        case ECE496::Drone::GROUND_EXCHANGE: {
+            if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("GROUND EXCHANGE");
-
-            {
-                ECE496::Utils::generateKeys();
-                if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
-                    ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::f_publicKey, KEY_SIZE);
-                    ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::publicKey, KEY_SIZE);
-                    NextState = ECE496::Drone::GROUND_IV;
-                } else {
-                    NextState = ECE496::Drone::WAIT;
-                }
             }
-            break;
 
-        case ECE496::Drone::GROUND_IV:
-            if (DEBUG)
-                ECE496::Utils::displayTextAndScroll("GROUD IV");
-
-            {
-                if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
-                    ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
-                    ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
-                    ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
-                }
+            ECE496::Utils::generateKeys();
+            if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+                ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::f_publicKey, KEY_SIZE);
+                ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::publicKey, KEY_SIZE);
+                NextState = ECE496::Drone::GROUND_IV;
+            } else {
                 NextState = ECE496::Drone::WAIT;
             }
             break;
+        }
 
-        case ECE496::Drone::STORE:
-            if (DEBUG)
+        case ECE496::Drone::GROUND_IV: {
+            if (DEBUG) {
+                ECE496::Utils::displayTextAndScroll("GROUD IV");
+            }
+
+            if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+                ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
+                ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
+                ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
+            }
+            NextState = ECE496::Drone::WAIT;
+            break;
+        }
+
+        case ECE496::Drone::STORE: {
+            if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("STORE");
+            }
 
             if (Drone->addOrder(r_packet_buf)) {
                 ECE496::Utils::logHex("Stored packet: ", r_packet_buf, PACKET_SIZE);
@@ -149,24 +157,29 @@ void loop() {
                 NextState = ECE496::Drone::WAIT;
             }
             break;
+        }
 
-        case ECE496::Drone::RESPOND:
-            if (DEBUG)
+        case ECE496::Drone::RESPOND: {
+            if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("RESPOND");
+            }
 
             // send an ack
             ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
             ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
             NextState = ECE496::Drone::WAIT;
             break;
+        }
 
-        default:
+        default: {
             Serial.println("This shouldn't happen.");
             while (1)
                 ;
             break;
+        }
     }
     State = NextState;
-    if (DEBUG)
+    if (DEBUG) {
         delay(1000);
+    }
 }

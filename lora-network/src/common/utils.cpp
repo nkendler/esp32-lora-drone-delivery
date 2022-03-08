@@ -92,7 +92,7 @@ void Utils::sendUnencryptedPacket(uint8_t* buf, int packet_size) {
     LoRa.write(buf, packet_size);
     LoRa.endPacket();
 
-    logHex("Sent: ", buf, packet_size);
+    logHex("Sent unencrypted:", buf, packet_size);
 }
 
 // randomly generate IV/nonce for use in ChaCha20
@@ -142,7 +142,7 @@ int Utils::receiveUnencryptedPacket(uint8_t* buf, int packet_size) {
     int bytes_available = LoRa.available();
     int bytes_read = packet_size <= bytes_available ? LoRa.readBytes(buf, packet_size) : LoRa.readBytes(buf, bytes_available);
 
-    logHex("received: ", buf, bytes_read);
+    logHex("Received unencrypted: ", buf, bytes_read);
 
     return bytes_read;
 }
@@ -181,22 +181,6 @@ int Utils::awaitPacketUntil(unsigned long timeout) {
     return 0;
 }
 
-// advertise this device to other devices and exit when another device says hello
-void Utils::advertiseConnection() {
-    int lastSendTime = 0;
-    while (1) {
-        // send a hello every 1000 milliseconds
-        if (millis() - lastSendTime > 1000) {
-            sendClear(publicKey, KEY_SIZE);
-            lastSendTime = millis();
-        }
-
-        // check for any other hellos
-        if (LoRa.parsePacket())
-            break;
-    }
-}
-
 void Utils::allocateEntropy(size_t size) {
     // check for sufficient entropy
     if (RNG.available(size))
@@ -218,51 +202,8 @@ void Utils::allocateEntropy(size_t size) {
 }
 
 void Utils::initSession() {
-    /*
-    // generate public/private key pair
-    generateKeys();
-    displayText("Generated keys!");
-    delay(1000);
-
-    // Wait for a connection with another device
-    displayText("Connecting...");
-    if (isSender())
-    {
-        advertiseConnection();
-    }
-    else
-    {
-        awaitPacket();
-    }
-
-    // receive foreign public key from sender
-    receiveClear(f_publicKey, KEY_SIZE);
-
-    if (isReceiver())
-    {
-        // reply with our public key for generating our shared secret
-        sendClear(publicKey, KEY_SIZE);
-    }
-    displayText("Connection established!");
-
-    // generate secret shared key for encryption
-    generateSecret();
-    chacha.setKey(sharedKey, KEY_SIZE);
-
-    if (isSender())
-    {
-        // generate IV for encryption with ChaCha and send to receiver
-        generateIV();
-        sendClear(IV, IV_SIZE);
-    }
-    else
-    {
-        // receive IV/Nonce from sender to be used in our ChaCha20
-        awaitPacket();
-        receiveClear(IV, IV_SIZE);
-        logHex("IV: ", IV, IV_SIZE);
-    }
-    chacha.setIV(IV, IV_SIZE);*/
+}
+void Utils::advertiseConnection() {
 }
 
 // destroys all cryptographically-sensitive information from the session
