@@ -135,6 +135,12 @@ void loop() {
                 ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
                 ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
                 ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
+
+
+                // encrypt
+                ECE496::Utils::generateSecret();
+                ECE496::Utils::chacha.setKey(ECE496::Utils::sharedKey, KEY_SIZE);
+                ECE496::Utils::chacha.setIV(ECE496::Utils::IV, IV_SIZE);
             }
             NextState = ECE496::Drone::WAIT;
             break;

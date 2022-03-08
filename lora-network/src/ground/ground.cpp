@@ -147,7 +147,11 @@ void loop() {
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
                 ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
                 if (ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE) {
-                    delay(1000);
+                    // encrypt
+                    ECE496::Utils::generateSecret();
+                    ECE496::Utils::chacha.setKey(ECE496::Utils::sharedKey, KEY_SIZE);
+                    ECE496::Utils::chacha.setIV(ECE496::Utils::IV, IV_SIZE);
+
                     NextState = ECE496::Ground::SEND;
                 } else {
                     NextState = ECE496::Ground::WAIT;
