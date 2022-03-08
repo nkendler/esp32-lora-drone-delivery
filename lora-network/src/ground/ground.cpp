@@ -59,14 +59,16 @@ void loop()
   switch (State)
   {
   case ECE496::Ground::WAIT:
-    if (Serial.available() == PACKET_SIZE) //wait for all bytes from packet to arrive serially
+    ECE496::Utils::displayTextAndScroll("WAIT");
+
+    //if (Serial.available() == PACKET_SIZE) //wait for all bytes from packet to arrive serially
     {
       /*packet is received from CLI. its in byte array form and the packet is 5 bytes long
       the byte array sends the first 8 bits and continues until the last 8 bits arrive
       so if the order is 10741946436 = 0x0280451844, then the byte array will have
       0x02 0x80 0x45 0x18 0x44 and order_buf will be the same*/
       for (i = PACKET_SIZE - 1; i >= 0; i--) {
-        order[i] = Serial.read();
+        //order[i] = Serial.read();
         delay(100);
       }
 
@@ -82,6 +84,8 @@ void loop()
     break;
   
   case ECE496::Ground::BUILD:
+    ECE496::Utils::displayTextAndScroll("BUILD");
+
     ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::PAYLOAD,
                                PACKET_SIZE, order);
     // assume success for now
@@ -89,68 +93,86 @@ void loop()
     break;
 
   case ECE496::Ground::ADVERTISE:
-      {
-        uint8_t hello_buffer[PACKET_SIZE];
-        ECE496::Utils::buildPacket(hello_buffer, ECE496::Utils::HELLO,PACKET_SIZE, NULL);
-        ECE496::Utils::sendUnencryptedPacket(hello_buffer, PACKET_SIZE);
-        if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
-          uint8_t reply[PACKET_SIZE];
-          ECE496::Utils::receiveUnencryptedPacket(reply, PACKET_SIZE);
-          if (ECE496::Utils::getPacketType(reply) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(reply) == ECE496::Utils::DRONE) {
-            NextState = ECE496::Ground::EXCHANGE;
-          }
-          else {
-            NextState = ECE496::Ground::WAIT;
-          }
-        }
-        else {
-          NextState = ECE496::Ground::WAIT;
-        }
-      }
-    break;
+    ECE496::Utils::displayTextAndScroll("ADVERTISE");
 
-  case ECE496::Ground::EXCHANGE:
+    {
+      uint8_t hello_buffer[PACKET_SIZE];
+      ECE496::Utils::buildPacket(hello_buffer, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
+      ECE496::Utils::sendUnencryptedPacket(hello_buffer, PACKET_SIZE);
+      if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
       {
-        ECE496::Utils::generateKeys();
-        ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::publicKey, KEY_SIZE);
-        if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
-          ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::f_publicKey, KEY_SIZE);
-          NextState = ECE496::Ground::IV;
-        }
-        else {
-          NextState = ECE496::Ground::WAIT;
-        }
-      }
-    break;
-
-  case ECE496::Ground::IV:
-      {
-        ECE496::Utils::generateIV();
-        ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
-        if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
+        uint8_t reply[PACKET_SIZE];
+        ECE496::Utils::receiveUnencryptedPacket(reply, PACKET_SIZE);
+        if (ECE496::Utils::getPacketType(reply) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(reply) == ECE496::Utils::DRONE)
         {
-          ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
-          if (ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE)
-          {
-            NextState = ECE496::Ground::SEND;
-          }
-          else {
-            NextState = ECE496::Ground::WAIT;
-          }
+          NextState = ECE496::Ground::EXCHANGE;
         }
         else
         {
           NextState = ECE496::Ground::WAIT;
         }
       }
+      else
+      {
+        NextState = ECE496::Ground::WAIT;
+      }
+    }
+    break;
+
+  case ECE496::Ground::EXCHANGE:
+    ECE496::Utils::displayTextAndScroll("EXCHANGE");
+
+    {
+      ECE496::Utils::generateKeys();
+      ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::publicKey, KEY_SIZE);
+      if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
+      {
+        ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::f_publicKey, KEY_SIZE);
+        NextState = ECE496::Ground::IV;
+      }
+      else
+      {
+        NextState = ECE496::Ground::WAIT;
+      }
+    }
+    break;
+
+  case ECE496::Ground::IV:
+    ECE496::Utils::displayTextAndScroll("IV");
+
+    {
+      ECE496::Utils::generateIV();
+      ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
+      if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
+      {
+        ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+        if (ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE)
+        {
+          delay(1000);
+          NextState = ECE496::Ground::SEND;
+        }
+        else
+        {
+          NextState = ECE496::Ground::WAIT;
+        }
+      }
+      else
+      {
+        NextState = ECE496::Ground::WAIT;
+      }
+    }
     break;
 
   case ECE496::Ground::SEND:
+    ECE496::Utils::displayTextAndScroll("SEND");
+
     ECE496::Utils::displayTextAndScroll("Sending packet.");
     ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
     NextState = ECE496::Ground::RECEIVE;
 
   case ECE496::Ground::RECEIVE:
+    ECE496::Utils::displayTextAndScroll("RECEIVE");
+
     // wait for a response
     if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME))
     {
@@ -176,6 +198,7 @@ void loop()
     break;
 
   case ECE496::Ground::CLEAR:
+    ECE496::Utils::displayTextAndScroll("CLEAR");
     memset(order, 0x00, PACKET_SIZE);
     NextState = ECE496::Ground::WAIT;
     has_order = false;
@@ -187,4 +210,5 @@ void loop()
     break;
   }
   State = NextState;
+  delay(1000);
 }
