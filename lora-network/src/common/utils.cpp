@@ -155,7 +155,7 @@ void Utils::receivePacket(char *buf)
 }
 
 // reads up to packet_size bytes into the buffer
-//returns the actual number of bytes read
+// returns the actual number of bytes read
 int Utils::receiveUnencryptedPacket(uint8_t *buf, int packet_size)
 {
     int bytes_available = LoRa.available();
@@ -374,6 +374,8 @@ Utils::PacketType Utils::getPacketType(uint8_t *buf)
         return ACK;
     case 0b00100000:
         return PAYLOAD;
+    case 0b00110000:
+        return GOODBYE;
     default:
         return ERROR;
     }

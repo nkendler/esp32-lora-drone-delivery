@@ -50,11 +50,11 @@ namespace ECE496
             UNKNOWN
         };
 
-        enum PacketType
-        {
+        enum PacketType {
             HELLO = 1,
             ACK,
             PAYLOAD,
+            GOODBYE,
             ERROR
         };
 
