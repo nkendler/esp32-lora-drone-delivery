@@ -8,49 +8,46 @@
 #define DEBUG 1
 
 #include <heltec.h>
+
 #include "utils.h"
 
 #define BAND 915E6
 #define PACKET_SIZE 5
-#define MAX_ORDERS 5 
+#define MAX_ORDERS 5
 #define WAIT_TIME_HOSPITAL 10000
 #define WAIT_TIME_CONNECT 1000
 
-namespace ECE496
-{
-  class Hospital
-  {
-      uint8_t orders_buf[MAX_ORDERS][PACKET_SIZE] = { { 0 } };
-      uint8_t total_mem = MAX_ORDERS * PACKET_SIZE;
-      uint8_t num_order = 0;
-  public:
-    int addOrder(uint8_t *order)
-    {
-      if (num_order < MAX_ORDERS)
-      {
-        memcpy(orders_buf[num_order], order, PACKET_SIZE);
-        num_order++;
-        return 1;
-      }
-      else return 0;
+namespace ECE496 {
+class Hospital {
+    uint8_t orders_buf[MAX_ORDERS][PACKET_SIZE] = {{0}};
+    uint8_t total_mem = MAX_ORDERS * PACKET_SIZE;
+    uint8_t num_order = 0;
+
+   public:
+    int addOrder(uint8_t *order) {
+        if (num_order < MAX_ORDERS) {
+            memcpy(orders_buf[num_order], order, PACKET_SIZE);
+            num_order++;
+            return 1;
+        } else
+            return 0;
     };
 
     int clearOrders() {
         memset(orders_buf, 0x00, total_mem);
         return 1;
     }
-    enum State
-    {
-      WAIT = 0,
-      CONNECT,
-      EXCHANGE,
-      RECEIVEORDERNUM,
-      RECEIVEORDERS,
-      SEND,
-      CLEAR 
+    enum State {
+        WAIT = 0,
+        CONNECT,
+        EXCHANGE,
+        RECEIVEORDERNUM,
+        RECEIVEORDERS,
+        SEND,
+        CLEAR
     };
-  };
-}
+};
+}  // namespace ECE496
 
 uint8_t r_packet_buf[PACKET_SIZE];
 uint8_t s_packet_buf[PACKET_SIZE];
@@ -62,25 +59,20 @@ ECE496::Hospital::State nextState;
 
 ECE496::Hospital *Hospital = new ECE496::Hospital();
 
+void setup() {
+    Heltec.begin(true, true, true, true, BAND);
+    delay(2000);
 
-void setup()
-{
-  Heltec.begin(true, true, true, true, BAND);
-  delay(2000);
-
-  ECE496::Utils::displayTextAndScroll("I am a hospital station.");
+    ECE496::Utils::displayTextAndScroll("I am a hospital station.");
 }
 
-void loop()
-{
-
-    switch (State)
-    {
+void loop() {
+    switch (State) {
         case ECE496::Hospital::WAIT:
             delay(WAIT_TIME_HOSPITAL);
             nextState = ECE496::Hospital::CONNECT;
             break;
-  
+
         case ECE496::Hospital::CONNECT:
             //build hello packet
             ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
@@ -88,18 +80,17 @@ void loop()
             ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
             //wait to receive something back
             if (ECE496::Utils::awaitPacketUntil(WAIT_TIME_CONNECT)) {
-               ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
-                
+                ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+
                 //ensure packet came from drone station
-               if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
-                   //received ack, now time to exchange public keys
-                   ECE496::Utils::displayTextAndScroll("Got ACK from drone.");
-                   nextState = ECE496::Hospital::EXCHANGE;
-               }
-               else {
-                   Serial.print("Received ill-formed packet.");
-                   nextState = ECE496::Hospital::WAIT;
-               }
+                if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
+                    //received ack, now time to exchange public keys
+                    ECE496::Utils::displayTextAndScroll("Got ACK from drone.");
+                    nextState = ECE496::Hospital::EXCHANGE;
+                } else {
+                    Serial.print("Received ill-formed packet.");
+                    nextState = ECE496::Hospital::WAIT;
+                }
             }
             //else, go back to wait
             else {
@@ -145,9 +136,10 @@ void loop()
 
         default:
             Serial.println("This shouldn't happen.");
-            while(1);
+            while (1)
+                ;
             break;
-        }
+    }
     State = nextState;
 }
 
