@@ -43,7 +43,9 @@ class Drone {
         STORE,
         RESPOND,
         GROUND_EXCHANGE,
-        GROUND_IV
+        GROUND_IV,
+        ERROR,
+        CLOSE
     };
 };
 }  // namespace ECE496
@@ -62,6 +64,7 @@ void setup() {
 
 void loop() {
     switch (State) {
+        // wait to receive a message from a foreign source
         case ECE496::Drone::WAIT: {
             if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("WAIT");
@@ -77,6 +80,7 @@ void loop() {
             break;
         }
 
+        // Determine the packet's purpose
         case ECE496::Drone::VERIFY: {
             if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("VERIFY");
@@ -104,6 +108,7 @@ void loop() {
             break;
         }
 
+        // Exchange public keys with the ground station
         case ECE496::Drone::GROUND_EXCHANGE: {
             if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("GROUND EXCHANGE");
@@ -120,6 +125,7 @@ void loop() {
             break;
         }
 
+        // Receive the IV for encryption from the ground
         case ECE496::Drone::GROUND_IV: {
             if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("GROUD IV");
@@ -134,6 +140,7 @@ void loop() {
             break;
         }
 
+        // Store the order to memory
         case ECE496::Drone::STORE: {
             if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("STORE");
@@ -148,6 +155,7 @@ void loop() {
             break;
         }
 
+        // Respond with an ACK
         case ECE496::Drone::RESPOND: {
             if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("RESPOND");
@@ -161,9 +169,9 @@ void loop() {
         }
 
         // need to add a state after communcations close in a session to call closeSession()
-        case ECE496::Drone::CLEAR: {
+        case ECE496::Drone::CLOSE: {
             if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("CLEAR");
+                ECE496::Utils::displayTextAndScroll("CLOSE");
             }
 
             ECE496::Utils::closeSession();
@@ -171,6 +179,8 @@ void loop() {
             break;
         }
 
+        // Case for any errors
+        case ECE496::Drone::ERROR:
         default: {
             Serial.println("This shouldn't happen.");
             ECE496::Utils::closeSession();
