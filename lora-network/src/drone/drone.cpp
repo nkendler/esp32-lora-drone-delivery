@@ -37,7 +37,6 @@ class Drone {
     };
     enum State {
         WAIT = 0,
-        RECEIVE,
         VERIFY,
         CLEAR,
         UPLOAD,
@@ -70,21 +69,11 @@ void loop() {
 
             // Listen for packets, if we get one, head to RECEIVE
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
-                NextState = ECE496::Drone::RECEIVE;
+                ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+                NextState = ECE496::Drone::VERIFY;
             } else {
                 NextState = ECE496::Drone::WAIT;
             }
-            break;
-        }
-
-        case ECE496::Drone::RECEIVE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("RECEIVE");
-            }
-
-            // Process incoming packets
-            ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
-            NextState = ECE496::Drone::VERIFY;
             break;
         }
 
@@ -171,8 +160,20 @@ void loop() {
             break;
         }
 
+        // need to add a state after communcations close in a session to call closeSession()
+        case ECE496::Drone::CLEAR: {
+            if (DEBUG) {
+                ECE496::Utils::displayTextAndScroll("CLEAR");
+            }
+
+            ECE496::Utils::closeSession();
+            NextState = ECE496::Drone::WAIT;
+            break;
+        }
+
         default: {
             Serial.println("This shouldn't happen.");
+            ECE496::Utils::closeSession();
             while (1)
                 ;
             break;

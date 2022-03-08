@@ -27,7 +27,8 @@ class Ground {
         EXCHANGE,
         IV,
         SEND,
-        RECEIVE
+        RECEIVE,
+        ERROR
     };
 };
 }  // namespace ECE496
@@ -41,6 +42,7 @@ ECE496::Ground::State State = ECE496::Ground::WAIT;
 ECE496::Ground::State NextState;
 
 int i;
+int error = 0;
 bool has_order = false;
 
 void setup() {
@@ -58,14 +60,14 @@ void loop() {
                 ECE496::Utils::displayTextAndScroll("WAIT");
             }
 
-            if (Serial.available() == PACKET_SIZE)  //wait for all bytes from packet to arrive serially
+            //if (Serial.available() == PACKET_SIZE)  //wait for all bytes from packet to arrive serially
             {
                 /*packet is received from CLI. its in byte array form and the packet is 5 bytes long
       the byte array sends the first 8 bits and continues until the last 8 bits arrive
       so if the order is 10741946436 = 0x0280451844, then the byte array will have
       0x02 0x80 0x45 0x18 0x44 and order_buf will be the same*/
                 for (i = PACKET_SIZE - 1; i >= 0; i--) {
-                    order[i] = Serial.read();
+                    //order[i] = Serial.read();
                     delay(100);
                 }
 
@@ -190,6 +192,7 @@ void loop() {
                 ECE496::Utils::displayTextAndScroll("CLEAR");
             }
 
+            ECE496::Utils::closeSession();
             memset(order, 0x00, PACKET_SIZE);
             NextState = ECE496::Ground::WAIT;
             has_order = false;
@@ -198,6 +201,7 @@ void loop() {
 
         default: {
             Serial.println("This shouldn't happen.");
+            ECE496::Utils::closeSession();
             while (1)
                 ;
             break;
