@@ -109,12 +109,12 @@ void loop() {
                     NextState = ECE496::Drone::GROUND_EXCHANGE;
                 } else {  // otherwise ignore the message
                     ECE496::Utils::displayTextAndScroll("Insufficient space.");
-                    NextState = ECE496::Drone::WAIT;
+                    NextState = ECE496::Drone::CLOSE;
                 }
 
             } else {  //unrecognized packet
                 ECE496::Utils::displayTextAndScroll("Received ill-formed packet.");
-                NextState = ECE496::Drone::WAIT;
+                NextState = ECE496::Drone::CLOSE;
             }
             break;
         }
@@ -151,8 +151,11 @@ void loop() {
                 ECE496::Utils::generateSecret();
                 ECE496::Utils::chacha.setKey(ECE496::Utils::sharedKey, KEY_SIZE);
                 ECE496::Utils::chacha.setIV(ECE496::Utils::IV, IV_SIZE);
+                NextState = ECE496::Drone::READY;
+            } else {
+                NextState = ECE496::Drone::WAIT;
             }
-            NextState = ECE496::Drone::READY;
+
             break;
         }
 
@@ -167,7 +170,7 @@ void loop() {
                 ECE496::Utils::receivePacket(r_packet_buf, PACKET_SIZE);
                 NextState = ECE496::Drone::VERIFY;
             } else {
-                NextState = ECE496::Drone::WAIT;
+                NextState = ECE496::Drone::CLOSE;
             }
             break;
         }
@@ -183,7 +186,7 @@ void loop() {
                 NextState = ECE496::Drone::RESPOND;
             } else {
                 ECE496::Utils::logHex("Storage full, ignored packet: ", r_packet_buf, PACKET_SIZE);
-                NextState = ECE496::Drone::WAIT;
+                NextState = ECE496::Drone::CLOSE;
             }
             break;
         }
