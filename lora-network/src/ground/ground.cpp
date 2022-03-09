@@ -37,7 +37,7 @@ class Ground {
 // packet buffers
 uint8_t r_packet_buf[PACKET_SIZE];
 uint8_t s_packet_buf[PACKET_SIZE];
-uint8_t order[PACKET_SIZE] = {0x04, 0x18, 0x45, 0x80, 0x02};
+uint8_t order[PACKET_SIZE] = {0};
 
 ECE496::Ground::State State = ECE496::Ground::WAIT;
 ECE496::Ground::State NextState;
