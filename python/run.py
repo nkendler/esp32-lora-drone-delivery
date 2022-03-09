@@ -112,7 +112,12 @@ class SheetParser():
         #note: port changes based on wire connected to computer...
         #on mac, run ls /dev/cu.* to find out which ports are connected
         # COM1-COM6 on Windows
-        self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+        if os.name == 'nt':
+            port = 'COM4'
+        elif os.name == 'posix':
+            port = '/dev/cu.usbserial-0001'
+
+        self.arduinoconn = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
         
         #split packet into bytes
@@ -131,7 +136,11 @@ class SheetParser():
         #send packet        
         self.arduinoconn.write(int_array)
         print("bytes sent")
-        self.arduinoconn.close()
+        if os.name == 'nt':
+            while True:
+                pass
+        elif os.name == 'posix':
+            self.arduinoconn.close()
 
         
 
