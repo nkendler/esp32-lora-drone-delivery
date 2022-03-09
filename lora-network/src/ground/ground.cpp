@@ -28,6 +28,7 @@ class Ground {
         IV,
         SEND,
         RECEIVE,
+        CLOSE,
         ERROR
     };
 };
@@ -36,7 +37,7 @@ class Ground {
 // packet buffers
 uint8_t r_packet_buf[PACKET_SIZE];
 uint8_t s_packet_buf[PACKET_SIZE];
-uint8_t order[PACKET_SIZE] = {0};
+uint8_t order[PACKET_SIZE] = {0x04, 0x18, 0x45, 0x80, 0x02};
 
 ECE496::Ground::State State = ECE496::Ground::WAIT;
 ECE496::Ground::State NextState;
@@ -49,7 +50,7 @@ void setup() {
     Heltec.begin(true, true, true, true, BAND);
     Serial.begin(115200);
     Serial.setTimeout(1);
-
+    ECE496::Utils::begin("Ground Station");
     ECE496::Utils::displayTextAndScroll("I am a ground station.");
 }
 
@@ -169,7 +170,7 @@ void loop() {
             }
 
             ECE496::Utils::displayTextAndScroll("Sending packet.");
-            ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
+            ECE496::Utils::sendPacket(s_packet_buf, PACKET_SIZE);
             NextState = ECE496::Ground::RECEIVE;
             break;
         }
@@ -182,7 +183,7 @@ void loop() {
 
             // wait for a response
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
-                ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+                ECE496::Utils::receivePacket(r_packet_buf, PACKET_SIZE);
 
                 // make sure packet is from a drone station
                 if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
@@ -191,30 +192,40 @@ void loop() {
                     NextState = ECE496::Ground::CLEAR;
                 } else {
                     Serial.print("Received ill-formed packet.");
-                    NextState = ECE496::Ground::SEND;
+                    NextState = ECE496::Ground::CLOSE;
                 }
             } else {
-                NextState = ECE496::Ground::SEND;
+                NextState = ECE496::Ground::CLOSE;
             }
             break;
         }
 
-        // Clear all crypto-sensitive information from this device
+        // Close session and clear all crypto-sensitive information from this device
+        case ECE496::Ground::CLOSE: {
+            if (DEBUG) {
+                ECE496::Utils::displayTextAndScroll("CLOSE");
+            }
+
+            ECE496::Utils::closeSession();
+            NextState = ECE496::Ground::WAIT;
+            break;
+        }
+
+        // Clear packet information after successful upload
         case ECE496::Ground::CLEAR: {
             if (DEBUG) {
                 ECE496::Utils::displayTextAndScroll("CLEAR");
             }
 
-            ECE496::Utils::closeSession();
             memset(order, 0x00, PACKET_SIZE);
-            NextState = ECE496::Ground::WAIT;
-            has_order = false;
+            NextState = ECE496::Ground::CLOSE;
             break;
         }
 
         // Case for any errors
         case ECE496::Ground::ERROR:
         default: {
+            ECE496::Utils::displayTextAndScroll("ERROR");
             Serial.println("This shouldn't happen.");
             ECE496::Utils::closeSession();
             while (1)
@@ -224,6 +235,6 @@ void loop() {
     }
     State = NextState;
     if (DEBUG) {
-        delay(1000);
+        delay(100);
     }
 }

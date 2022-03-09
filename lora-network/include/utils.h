@@ -22,24 +22,6 @@
 namespace ECE496 {
 class Utils {
    public:
-    static void advertiseConnection();
-    static void awaitPacket();
-    static int awaitPacketUntil(unsigned long timeout);
-    static void receivePacket(char* buf);
-    static void sendPacket(char const* s, int size);
-    static void sendUnencryptedPacket(uint8_t* buf, int pakcet_size);
-    static void displayText(char const* text);
-    static void displayTextAndScroll(char const* text);
-    static void logHex(String n, uint8_t* s, size_t size);
-    static void begin(char const* id);
-    static void initSession();
-    static void closeSession();
-    static int receiveUnencryptedPacket(uint8_t* buf, int packet_size);
-    static void buildPacket(uint8_t* buf, int packet_type, int packet_size, uint8_t* payload);
-    static void generateKeys();
-    static void generateIV();
-    static void generateSecret();
-
     enum StationType {
         GROUND = 1,
         HOSPITAL,
@@ -55,8 +37,27 @@ class Utils {
         ERROR
     };
 
+    static void begin(char const* id);
+    static void logHex(String n, uint8_t* s, size_t size);
+    static void displayText(char const* text);
+    static void displayTextAndScroll(char const* text);
+
+
+    static void sendPacket(uint8_t* buf, size_t size);
+    static void sendUnencryptedPacket(uint8_t* buf, size_t pakcet_size);
+    static size_t receivePacket(uint8_t* buf, size_t packet_size);
+    static size_t receiveUnencryptedPacket(uint8_t* buf, size_t packet_size);
+    static void awaitPacket();
+    static int awaitPacketUntil(unsigned long timeout);
+
+    static void buildPacket(uint8_t* buf, PacketType packet_type, size_t packet_size, uint8_t* payload);
     static Utils::StationType getPacketStationType(uint8_t* buf);
     static Utils::PacketType getPacketType(uint8_t* buf);
+
+    static void generateKeys();
+    static void generateIV();
+    static void generateSecret();
+    static void closeSession();
 
     static uint8_t publicKey[KEY_SIZE];
     static uint8_t privateKey[KEY_SIZE];
@@ -67,11 +68,6 @@ class Utils {
 
    private:
     static void allocateEntropy(size_t size);
-    static void displayText(String s);
-    static void sendClear(uint8_t* buf, size_t size);
-    static void receiveClear(uint8_t* buf, size_t size);
-    static void sendCipher(uint8_t* buf, size_t size);
-    static void receiveCipher(uint8_t* buf, size_t size);
     static void encrypt(uint8_t* input, size_t size);
     static void decrypt(uint8_t* input, size_t size);
 

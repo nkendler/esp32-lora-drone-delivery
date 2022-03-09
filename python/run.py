@@ -111,6 +111,7 @@ class SheetParser():
     def send(self):
         #note: port changes based on wire connected to computer...
         #on mac, run ls /dev/cu.* to find out which ports are connected
+        # COM1-COM6 on Windows
         self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
 
         

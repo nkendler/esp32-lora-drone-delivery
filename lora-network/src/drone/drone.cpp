@@ -35,6 +35,9 @@ class Drone {
         } else
             return 0;
     };
+    bool hasSpace() {
+        return num_orders < MAX_ORDERS;
+    }
     enum State {
         WAIT = 0,
         VERIFY,
@@ -44,6 +47,7 @@ class Drone {
         RESPOND,
         GROUND_EXCHANGE,
         GROUND_IV,
+        READY,
         ERROR,
         CLOSE
     };
@@ -58,7 +62,7 @@ ECE496::Drone::State NextState;
 void setup() {
     Heltec.begin(true, true, true, true, BAND);
     delay(2000);
-
+    ECE496::Utils::begin("Drone Station");
     ECE496::Utils::displayTextAndScroll("I am a drone station.");
 }
 
@@ -97,11 +101,18 @@ void loop() {
                 NextState = ECE496::Drone::STORE;
             } else if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::GROUND && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::HELLO) {
                 ECE496::Utils::displayTextAndScroll("Hello detected from ground station.");
-                ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
-                ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
-                NextState = ECE496::Drone::GROUND_EXCHANGE;
-            } else  //unrecognized packet
-            {
+
+                // check if we have enough space to pickup an order
+                if (Drone->hasSpace()) {
+                    ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
+                    ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
+                    NextState = ECE496::Drone::GROUND_EXCHANGE;
+                } else {  // otherwise ignore the message
+                    ECE496::Utils::displayTextAndScroll("Insufficient space.");
+                    NextState = ECE496::Drone::WAIT;
+                }
+
+            } else {  //unrecognized packet
                 ECE496::Utils::displayTextAndScroll("Received ill-formed packet.");
                 NextState = ECE496::Drone::WAIT;
             }
@@ -136,13 +147,28 @@ void loop() {
                 ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
                 ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
 
-
                 // encrypt
                 ECE496::Utils::generateSecret();
                 ECE496::Utils::chacha.setKey(ECE496::Utils::sharedKey, KEY_SIZE);
                 ECE496::Utils::chacha.setIV(ECE496::Utils::IV, IV_SIZE);
             }
-            NextState = ECE496::Drone::WAIT;
+            NextState = ECE496::Drone::READY;
+            break;
+        }
+
+        // Ready to receive a packet over a secure connection
+        case ECE496::Drone::READY: {
+            if (DEBUG) {
+                ECE496::Utils::displayTextAndScroll("READY");
+            }
+
+            // Listen for packets, if we get one, head to VERIFY
+            if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+                ECE496::Utils::receivePacket(r_packet_buf, PACKET_SIZE);
+                NextState = ECE496::Drone::VERIFY;
+            } else {
+                NextState = ECE496::Drone::WAIT;
+            }
             break;
         }
 
@@ -156,6 +182,7 @@ void loop() {
                 ECE496::Utils::logHex("Stored packet: ", r_packet_buf, PACKET_SIZE);
                 NextState = ECE496::Drone::RESPOND;
             } else {
+                ECE496::Utils::logHex("Storage full, ignored packet: ", r_packet_buf, PACKET_SIZE);
                 NextState = ECE496::Drone::WAIT;
             }
             break;
@@ -169,8 +196,8 @@ void loop() {
 
             // send an ack
             ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
-            ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
-            NextState = ECE496::Drone::WAIT;
+            ECE496::Utils::sendPacket(s_packet_buf, PACKET_SIZE);
+            NextState = ECE496::Drone::CLOSE;
             break;
         }
 
@@ -197,6 +224,6 @@ void loop() {
     }
     State = NextState;
     if (DEBUG) {
-        delay(1000);
+        delay(100);
     }
 }
