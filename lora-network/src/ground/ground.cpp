@@ -217,6 +217,7 @@ void loop() {
                 ECE496::Utils::displayTextAndScroll("CLEAR");
             }
 
+            has_order = false;
             memset(order, 0x00, PACKET_SIZE);
             NextState = ECE496::Ground::CLOSE;
             break;
