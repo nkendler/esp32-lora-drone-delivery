@@ -31,6 +31,41 @@ class Ground {
         CLOSE,
         ERROR
     };
+    static void printState(State state) {
+        switch (state) {
+            case CLEAR:
+                ECE496::Utils::displayTextAndScroll("CLEAR");
+                break;
+            case WAIT:
+                ECE496::Utils::displayTextAndScroll("WAIT");
+                break;
+            case BUILD:
+                ECE496::Utils::displayTextAndScroll("BUILD");
+                break;
+            case ADVERTISE:
+                ECE496::Utils::displayTextAndScroll("ADVERTISE");
+                break;
+            case EXCHANGE:
+                ECE496::Utils::displayTextAndScroll("EXCHANGE");
+                break;
+            case IV:
+                ECE496::Utils::displayTextAndScroll("IV");
+                break;
+            case SEND:
+                ECE496::Utils::displayTextAndScroll("SEND");
+                break;
+            case RECEIVE:
+                ECE496::Utils::displayTextAndScroll("CLOSE");
+                break;
+            case CLOSE:
+                ECE496::Utils::displayTextAndScroll("CLOSE");
+                break;
+            case ERROR:
+            default:
+                ECE496::Utils::displayTextAndScroll("ERROR");
+                break;
+        }
+    }
 };
 }  // namespace ECE496
 
@@ -52,6 +87,9 @@ void setup() {
     Serial.setTimeout(1);
     ECE496::Utils::begin("Ground Station");
     ECE496::Utils::displayTextAndScroll("I am a ground station.");
+    if (DEBUG) {
+        ECE496::Ground::printState(State);
+    }
 }
 
 void loop() {
@@ -59,10 +97,6 @@ void loop() {
 
         // Wait for an order to be received over CLI
         case ECE496::Ground::WAIT: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("WAIT");
-            }
-
             if (Serial.available() == PACKET_SIZE)  //wait for all bytes from packet to arrive serially
             {
                 /* packet is received from CLI. its in byte array form and the packet is 5 bytes long
@@ -87,10 +121,6 @@ void loop() {
 
         // Build packet from CLI input
         case ECE496::Ground::BUILD: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("BUILD");
-            }
-
             ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::PAYLOAD,
                                        PACKET_SIZE, order);
             // assume success for now
@@ -100,10 +130,6 @@ void loop() {
 
         // Advertise a connection to drones by saying HELLO
         case ECE496::Ground::ADVERTISE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("ADVERTISE");
-            }
-
             uint8_t hello_buffer[PACKET_SIZE];
             ECE496::Utils::buildPacket(hello_buffer, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
             ECE496::Utils::sendUnencryptedPacket(hello_buffer, PACKET_SIZE);
@@ -122,10 +148,6 @@ void loop() {
 
         // Exchange public keys with the drone
         case ECE496::Ground::EXCHANGE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("EXCHANGE");
-            }
-
             ECE496::Utils::generateKeys();
             ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::publicKey, KEY_SIZE);
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
@@ -139,10 +161,6 @@ void loop() {
 
         // Send IV to drone for encryption
         case ECE496::Ground::IV: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("IV");
-            }
-
             ECE496::Utils::generateIV();
             ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
@@ -165,10 +183,6 @@ void loop() {
 
         // Send order to drone as a payload
         case ECE496::Ground::SEND: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("SEND");
-            }
-
             ECE496::Utils::displayTextAndScroll("Sending packet.");
             ECE496::Utils::sendPacket(s_packet_buf, PACKET_SIZE);
             NextState = ECE496::Ground::RECEIVE;
@@ -177,10 +191,6 @@ void loop() {
 
         // Receive and confirm ACK from drone
         case ECE496::Ground::RECEIVE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("RECEIVE");
-            }
-
             // wait for a response
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
                 ECE496::Utils::receivePacket(r_packet_buf, PACKET_SIZE);
@@ -202,10 +212,6 @@ void loop() {
 
         // Close session and clear all crypto-sensitive information from this device
         case ECE496::Ground::CLOSE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("CLOSE");
-            }
-
             ECE496::Utils::closeSession();
             NextState = ECE496::Ground::WAIT;
             break;
@@ -213,10 +219,6 @@ void loop() {
 
         // Clear packet information after successful upload
         case ECE496::Ground::CLEAR: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("CLEAR");
-            }
-
             has_order = false;
             memset(order, 0x00, PACKET_SIZE);
             NextState = ECE496::Ground::CLOSE;
@@ -226,7 +228,6 @@ void loop() {
         // Case for any errors
         case ECE496::Ground::ERROR:
         default: {
-            ECE496::Utils::displayTextAndScroll("ERROR");
             Serial.println("This shouldn't happen.");
             ECE496::Utils::closeSession();
             while (1)
@@ -234,8 +235,13 @@ void loop() {
             break;
         }
     }
-    State = NextState;
+
+    // move to the next state
     if (DEBUG) {
         delay(100);
+        if (State != NextState) {
+            ECE496::Ground::printState(NextState);
+        }
     }
+    State = NextState;
 }

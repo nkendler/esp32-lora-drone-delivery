@@ -154,6 +154,10 @@ void Utils::buildPacket(uint8_t* buf, Utils::PacketType packet_type, size_t pack
             break;
         case PAYLOAD:
             buf[0] |= 0b00100000;
+            break;
+        case GOODBYE:
+            buf[0] |= 0b00110000;
+            break;
     }
 }
 

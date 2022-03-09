@@ -5,7 +5,6 @@
  */
 
 #define ESP32 1
-#define DEBUG 1
 
 #include <heltec.h>
 
@@ -51,6 +50,44 @@ class Drone {
         ERROR,
         CLOSE
     };
+    static void printState(State state) {
+        switch (state) {
+            case CLEAR:
+                ECE496::Utils::displayTextAndScroll("CLEAR");
+                break;
+            case WAIT:
+                ECE496::Utils::displayTextAndScroll("WAIT");
+                break;
+            case VERIFY:
+                ECE496::Utils::displayTextAndScroll("VERIFY");
+                break;
+            case UPLOAD:
+                ECE496::Utils::displayTextAndScroll("UPLOAD");
+                break;
+            case GROUND_EXCHANGE:
+                ECE496::Utils::displayTextAndScroll("GROUND_EXCHANGE");
+                break;
+            case GROUND_IV:
+                ECE496::Utils::displayTextAndScroll("GROUND_IV");
+                break;
+            case RESPOND:
+                ECE496::Utils::displayTextAndScroll("RESPOND");
+                break;
+            case READY:
+                ECE496::Utils::displayTextAndScroll("READY");
+                break;
+            case CLOSE:
+                ECE496::Utils::displayTextAndScroll("CLOSE");
+                break;
+            case STORE:
+                ECE496::Utils::displayTextAndScroll("STORE");
+                break;
+            case ERROR:
+            default:
+                ECE496::Utils::displayTextAndScroll("ERROR");
+                break;
+        }
+    }
 };
 }  // namespace ECE496
 
@@ -64,16 +101,15 @@ void setup() {
     delay(2000);
     ECE496::Utils::begin("Drone Station");
     ECE496::Utils::displayTextAndScroll("I am a drone station.");
+    if (DEBUG) {
+        ECE496::Drone::printState(State);
+    }
 }
 
 void loop() {
     switch (State) {
         // wait to receive a message from a foreign source
         case ECE496::Drone::WAIT: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("WAIT");
-            }
-
             // Listen for packets, if we get one, head to RECEIVE
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
                 ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
@@ -86,10 +122,6 @@ void loop() {
 
         // Determine the packet's purpose
         case ECE496::Drone::VERIFY: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("VERIFY");
-            }
-
             if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::HOSPITAL && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
                 ECE496::Utils::displayTextAndScroll("ACK detected from hospital");
                 NextState = ECE496::Drone::CLEAR;
@@ -121,10 +153,6 @@ void loop() {
 
         // Exchange public keys with the ground station
         case ECE496::Drone::GROUND_EXCHANGE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("GROUND EXCHANGE");
-            }
-
             ECE496::Utils::generateKeys();
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
                 ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::f_publicKey, KEY_SIZE);
@@ -138,10 +166,6 @@ void loop() {
 
         // Receive the IV for encryption from the ground
         case ECE496::Drone::GROUND_IV: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("GROUD IV");
-            }
-
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
                 ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
                 ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
@@ -161,10 +185,6 @@ void loop() {
 
         // Ready to receive a packet over a secure connection
         case ECE496::Drone::READY: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("READY");
-            }
-
             // Listen for packets, if we get one, head to VERIFY
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
                 ECE496::Utils::receivePacket(r_packet_buf, PACKET_SIZE);
@@ -177,10 +197,6 @@ void loop() {
 
         // Store the order to memory
         case ECE496::Drone::STORE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("STORE");
-            }
-
             if (Drone->addOrder(r_packet_buf)) {
                 ECE496::Utils::logHex("Stored packet: ", r_packet_buf, PACKET_SIZE);
                 NextState = ECE496::Drone::RESPOND;
@@ -193,11 +209,6 @@ void loop() {
 
         // Respond with an ACK
         case ECE496::Drone::RESPOND: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("RESPOND");
-            }
-
-            // send an ack
             ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK, PACKET_SIZE, NULL);
             ECE496::Utils::sendPacket(s_packet_buf, PACKET_SIZE);
             NextState = ECE496::Drone::CLOSE;
@@ -206,10 +217,6 @@ void loop() {
 
         // need to add a state after communcations close in a session to call closeSession()
         case ECE496::Drone::CLOSE: {
-            if (DEBUG) {
-                ECE496::Utils::displayTextAndScroll("CLOSE");
-            }
-
             ECE496::Utils::closeSession();
             NextState = ECE496::Drone::WAIT;
             break;
@@ -225,8 +232,13 @@ void loop() {
             break;
         }
     }
-    State = NextState;
+
+    // move to the next state
     if (DEBUG) {
         delay(100);
+        if (State != NextState) {
+            ECE496::Drone::printState(NextState);
+        }
     }
+    State = NextState;
 }
