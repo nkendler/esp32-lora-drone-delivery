@@ -130,7 +130,7 @@ int Utils::awaitPacketUntil(unsigned long timeout) {
 void Utils::buildPacket(uint8_t* buf, Utils::PacketType packet_type, size_t packet_size, uint8_t* payload) {
     // init packet to payload, otherwise fill it with zeroes
     if (payload != NULL) {
-        memcpy(buf, payload, packet_size);
+        memmove(buf, payload, packet_size);
     } else {
         memset(buf, 0, packet_size);
     }
