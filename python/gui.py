@@ -95,16 +95,17 @@ class Window(QWidget):
     def hospital_maker(self):
         
         hospital_widget = QWidget()
-        self.hospital_run_button = QPushButton("START", clicked=self.start_hospital_loop)
+        self.hospital_start_button = QPushButton("START", clicked=self.start_hospital_loop)
         self.hospital_stop_button = QPushButton("STOP", clicked=self.end_hospital_loop)
         self.hospital_console = self.console_maker()
+        self.hospital_stop_button.setEnabled(False)
         
         upper_layout = QVBoxLayout()
         layout_top = QVBoxLayout()
         layout_bot = QHBoxLayout()
         
         layout_top.addWidget(self.hospital_console)
-        layout_bot.addWidget(self.hospital_run_button, 5)
+        layout_bot.addWidget(self.hospital_start_button, 5)
         layout_bot.addWidget(self.hospital_stop_button, 5)
 
         upper_layout.addLayout(layout_top)
@@ -115,16 +116,34 @@ class Window(QWidget):
 
     def end_hospital_loop(self):
         self.hospital_timer.stop()
+        del self.hospital_timer
         self.hospital_console.append("Hospital Loop Ended")
+
+        self.hospital_start_button.setEnabled(True)
+        self.hospital_stop_button.setEnabled(False)
 
     def start_hospital_loop(self):
         self.hospital_timer = QTimer()
         self.hospital_timer.timeout.connect(self.hospital_loop_action)
         self.hospital_timer.start(1000)
         self.hospital_start_time = time.time()
+
+        self.hospital_start_button.setEnabled(False)
+        self.hospital_stop_button.setEnabled(True)
     
     def hospital_loop_action(self):
-        self.hospital_console.append(f"Time Passed: {time.time() - self.hospital_start_time}")
+        self.hospital_console.append(f"Time Passed: {time.time() - self.hospital_start_time:.2f}")
+        df = self.ord.format_packet_into_df()
+        if df is not None:
+            self.hospital_console.append(f"\nPacket Recieved")
+            for column in df.columns:
+                self.hospital_console.append(f"{column}: {df[column][0]}")
+            self.hospital_console.append(f"Exported to: {self.ord.export_dataframe(df)}")
+            self.hospital_console.append("")
+            
+        else:
+            self.hospital_console.append(f"No Packet to Read")
+        #Here we loop it for however frequently we want to acquire info from the device itself. Not sure how that would look
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
