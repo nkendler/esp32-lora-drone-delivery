@@ -126,19 +126,27 @@ class OrderReceiver():
         print("Initializing Order Receiver")
         self.export_path = "order_exports"
         self.packet_list = []
+        self.init_time = time.time()
     
     def _get_order_name(self):
         order_name = datetime.now().strftime("droneorder_%Y%m%d%H%M%S.xlsx")
         return order_name
     
-    def get_packet_from_serial(self):
-        sample_packet = [0x02, 0x80, 0x45, 0x18, 0x44]
-        self.packet_list.append(sample_packet)
-        #FINAL PACKET SHOULD BE 0x0280451844
+    def get_packet_from_serial(self, debug=False):
+
+        if debug:
+            #Adding a packet every 5 seconds
+            current_time = time.time()
+            if int(current_time - self.init_time) % 5 == 0:
+                sample_packet = [0x02, 0x80, 0x45, 0x18, 0x44]
+                self.packet_list.append(sample_packet)
+            #FINAL PACKET SHOULD BE 0x0280451844
         
     def export_dataframe(self, dataframe):
         order_name = self._get_order_name()
-        dataframe.to_excel("{}\\{}".format(self.export_path, order_name))  
+        excel_path = "{}\\{}".format(self.export_path, order_name)
+        dataframe.to_excel(excel_path) 
+        return excel_path
 
     def decode_order_line(self, order_line):
         #print(len(order_line))
@@ -164,7 +172,7 @@ class OrderReceiver():
 
     def format_packet_into_df(self):
         df = None
-        self.get_packet_from_serial()
+        self.get_packet_from_serial(debug=True)
         while len(self.packet_list) > 0:
             order_line = self.packet_list.pop(0)
             df_row = self.decode_order_line(order_line)
