@@ -1,8 +1,10 @@
 import os
 import sys
+import time
 from processors import OrderReceiver, SheetParser
 from PyQt5.QtWidgets import (QApplication, QComboBox, QFileDialog, QLineEdit, QPushButton,
                              QStackedLayout, QVBoxLayout, QHBoxLayout, QWidget, QTextEdit)
+from PyQt5.QtCore import QTimer
 
 
 class Window(QWidget):
@@ -91,9 +93,10 @@ class Window(QWidget):
         self.on_line_edit_enter()
     
     def hospital_maker(self):
+        
         hospital_widget = QWidget()
-        self.hospital_run_button = QPushButton("START")
-        self.hospital_stop_button = QPushButton("STOP")
+        self.hospital_run_button = QPushButton("START", clicked=self.start_hospital_loop)
+        self.hospital_stop_button = QPushButton("STOP", clicked=self.end_hospital_loop)
         self.hospital_console = self.console_maker()
         
         upper_layout = QVBoxLayout()
@@ -109,6 +112,19 @@ class Window(QWidget):
 
         hospital_widget.setLayout(upper_layout)
         return hospital_widget
+
+    def end_hospital_loop(self):
+        self.hospital_timer.stop()
+        self.hospital_console.append("Hospital Loop Ended")
+
+    def start_hospital_loop(self):
+        self.hospital_timer = QTimer()
+        self.hospital_timer.timeout.connect(self.hospital_loop_action)
+        self.hospital_timer.start(1000)
+        self.hospital_start_time = time.time()
+    
+    def hospital_loop_action(self):
+        self.hospital_console.append(f"Time Passed: {time.time() - self.hospital_start_time}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

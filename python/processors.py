@@ -161,7 +161,6 @@ class OrderReceiver():
                 if i != 6: order = order >> 5
         
         return df_list
-        
 
     def format_packet_into_df(self):
         df = None
