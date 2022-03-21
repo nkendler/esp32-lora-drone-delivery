@@ -18,7 +18,7 @@
 
 namespace ECE496 {
 class Ground {
-   public:
+    public:
     enum State {
         CLEAR = 0,
         WAIT,
@@ -121,8 +121,7 @@ void loop() {
 
         // Build packet from CLI input
         case ECE496::Ground::BUILD: {
-            ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::PAYLOAD,
-                                       PACKET_SIZE, order);
+            ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::PAYLOAD, PACKET_SIZE, order);
             // assume success for now
             NextState = ECE496::Ground::ADVERTISE;
             break;
