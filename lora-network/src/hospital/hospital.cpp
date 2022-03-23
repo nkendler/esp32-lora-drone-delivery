@@ -14,8 +14,8 @@
 #define BAND 915E6
 #define PACKET_SIZE 5
 #define MAX_ORDERS 5
-#define WAIT_TIME_HOSPITAL 10000
-#define WAIT_TIME_CONNECT 1000
+#define PACKET_WAIT_TIME 5000
+#define INTER_HELLO_TIME 10000
 
 namespace ECE496 {
 class Hospital {
@@ -37,15 +37,39 @@ class Hospital {
         memset(orders_buf, 0x00, total_mem);
         return 1;
     }
+
     enum State {
         WAIT = 0,
-        CONNECT,
         EXCHANGE,
-        RECEIVEORDERNUM,
-        RECEIVEORDERS,
-        SEND,
-        CLEAR
+        IV,
+        RECEIVE,
+        CLOSE,
+        ERROR,
     };
+
+    static void printState(State state) {
+        switch (state) {
+            case WAIT:
+                ECE496::Utils::displayTextAndScroll("WAIT");
+                break;
+            case EXCHANGE:
+                ECE496::Utils::displayTextAndScroll("EXCHANGE");
+                break;
+            case IV:
+                ECE496::Utils::displayTextAndScroll("IV");
+                break;
+            case RECEIVE:
+                ECE496::Utils::displayTextAndScroll("RECEIVE");
+                break;
+            case CLOSE:
+                ECE496::Utils::displayTextAndScroll("CLOSE");
+                break;
+            case ERROR:
+            default:
+                ECE496::Utils::displayTextAndScroll("ERROR");
+                break;
+        }
+    }
 };
 }  // namespace ECE496
 
@@ -55,7 +79,7 @@ uint8_t orders_to_receive = 0;
 uint8_t i = 0;
 
 ECE496::Hospital::State State = ECE496::Hospital::WAIT;
-ECE496::Hospital::State nextState;
+ECE496::Hospital::State NextState;
 
 ECE496::Hospital *Hospital = new ECE496::Hospital();
 
@@ -68,82 +92,118 @@ void setup() {
 
 void loop() {
     switch (State) {
-        case ECE496::Hospital::WAIT:
-            delay(WAIT_TIME_HOSPITAL);
-            nextState = ECE496::Hospital::CONNECT;
-            break;
+        // send out a HELLO to the drone
+        case ECE496::Hospital::WAIT: {
+            // wait some time to not clog channel
+            delay(INTER_HELLO_TIME);
 
-        case ECE496::Hospital::CONNECT:
-            //build hello packet
-            ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
-            //send packet
-            ECE496::Utils::sendUnencryptedPacket(s_packet_buf, PACKET_SIZE);
-            //wait to receive something back
-            if (ECE496::Utils::awaitPacketUntil(WAIT_TIME_CONNECT)) {
-                ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+            // send hello
+            ECE496::Utils::buildPacket(s_packet_buf,ECE496::Utils::HELLO,PACKET_SIZE,NULL);
+            ECE496::Utils::sendUnencryptedPacket(s_packet_buf,PACKET_SIZE);
 
-                //ensure packet came from drone station
-                if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
-                    //received ack, now time to exchange public keys
-                    ECE496::Utils::displayTextAndScroll("Got ACK from drone.");
-                    nextState = ECE496::Hospital::EXCHANGE;
-                } else {
-                    Serial.print("Received ill-formed packet.");
-                    nextState = ECE496::Hospital::WAIT;
+            // await a response from a drone
+            if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+                ECE496::Utils::receiveUnencryptedPacket(r_packet_buf,PACKET_SIZE);
+                if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE 
+                    && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
+                    // Continue to encryption
+                    NextState = ECE496::Hospital::EXCHANGE;
+                }
+                else {
+                    NextState = ECE496::Hospital::WAIT;
                 }
             }
-            //else, go back to wait
             else {
-                nextState = ECE496::Hospital::WAIT;
+                NextState = ECE496::Hospital::WAIT;
             }
             break;
+        }
 
-        case ECE496::Hospital::EXCHANGE:
-            //TO DO: code to exchange and establish secret private key (init session)
-            nextState = ECE496::Hospital::RECEIVEORDERNUM;
+        // Exchange public keys with the drone
+        case ECE496::Hospital::EXCHANGE: {
+            ECE496::Utils::generateKeys();
+            ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::publicKey, KEY_SIZE);
+            if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+                ECE496::Utils::receiveUnencryptedPacket(ECE496::Utils::f_publicKey, KEY_SIZE);
+                NextState = ECE496::Hospital::IV;
+            } else {
+                NextState = ECE496::Hospital::WAIT;
+            }
             break;
+        }
 
-        case ECE496::Hospital::RECEIVEORDERNUM:
-            //receive encrypted packet
-            ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
-            // TO DO: unencrypt to find order num
-            //lowest 3 bits of buff[0] have ordernum
-            orders_to_receive = r_packet_buf[0] & 0b111;
-            // TO DO: set orders_to_receive
-            nextState = ECE496::Hospital::RECEIVEORDERS;
-            break;
-
-        case ECE496::Hospital::RECEIVEORDERS:
-            for (i = 0; i < orders_to_receive; i++) {
-                //receive order in r_packet_buf
+        // Send IV to drone for encryption
+        case ECE496::Hospital::IV: {
+            ECE496::Utils::generateIV();
+            ECE496::Utils::sendUnencryptedPacket(ECE496::Utils::IV, IV_SIZE);
+            if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
                 ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
-                Hospital->addOrder(r_packet_buf);
-                delay(100);
+                if (ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK && ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE) {
+                    // encrypt
+                    ECE496::Utils::generateSecret();
+                    ECE496::Utils::chacha.setKey(ECE496::Utils::sharedKey, KEY_SIZE);
+                    ECE496::Utils::chacha.setIV(ECE496::Utils::IV, IV_SIZE);
+
+                    NextState = ECE496::Hospital::RECEIVE;
+                } else {
+                    NextState = ECE496::Hospital::WAIT;
+                }
+            } else {
+                NextState = ECE496::Hospital::WAIT;
             }
-            nextState = ECE496::Hospital::SEND;
             break;
+        }
 
-        case ECE496::Hospital::SEND:
-            //add code to connect to cli/database
-            nextState = ECE496::Hospital::CLEAR;
+
+        // Receive orders from drone
+        case ECE496::Hospital::RECEIVE: {
+            if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
+                ECE496::Utils::receivePacket(r_packet_buf, PACKET_SIZE);
+
+                // make sure packet is from a drone station
+                if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE 
+                    && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::PAYLOAD 
+                    && Hospital->addOrder(r_packet_buf)) {
+
+                    // save order
+                    ECE496::Utils::displayTextAndScroll("Got PAYLOAD from drone.");
+                    ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::ACK,PACKET_SIZE,NULL);
+                    ECE496::Utils::sendPacket(s_packet_buf,PACKET_SIZE);
+                    NextState = ECE496::Hospital::RECEIVE;
+                } else {
+                    Serial.print("Received ill-formed packet.");
+                    NextState = ECE496::Hospital::CLOSE;
+                }
+            } else {
+                NextState = ECE496::Hospital::CLOSE;
+            }
             break;
+        }
 
-        case ECE496::Hospital::CLEAR:
-            orders_to_receive = 0;
-            Hospital->clearOrders();
-            nextState = ECE496::Hospital::WAIT;
+        // Close session and clear all crypto-sensitive information from this device
+        case ECE496::Hospital::CLOSE: {
+            ECE496::Utils::closeSession();
+            NextState = ECE496::Hospital::WAIT;
             break;
+        }
 
-        default:
+        // Case for any errors
+        case ECE496::Hospital::ERROR:
+        default: {
             Serial.println("This shouldn't happen.");
+            ECE496::Utils::closeSession();
             while (1)
                 ;
             break;
+        }
     }
-    State = nextState;
+
+    // move to the next state
+    if (DEBUG) {
+        delay(100);
+        if (State != NextState) {
+            ECE496::Hospital::printState(NextState);
+        }
+    }
+    State = NextState;
 }
-
-/*in setup
-begin, initsession, 
-
-in loop*/

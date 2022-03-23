@@ -96,6 +96,12 @@ class Drone {
             case GROUND_IV:
                 ECE496::Utils::displayTextAndScroll("GROUND_IV");
                 break;
+            case HOSPITAL_EXCHANGE:
+                ECE496::Utils::displayTextAndScroll("HOSPITAL_EXCHANGE");
+                break;
+            case HOSPITAL_IV:
+                ECE496::Utils::displayTextAndScroll("HOSPITAL_IV");
+                break;
             case RESPOND:
                 ECE496::Utils::displayTextAndScroll("RESPOND");
                 break;
