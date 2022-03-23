@@ -93,7 +93,9 @@ class Window(QWidget):
     
     def send(self):
         # Open connection and save it
-        self.arduinoconn = Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+        #self.arduinoconn = Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+        
+        self.arduinoconn = Serial(port='COM3', baudrate=115200, timeout=.1)
 
         print("packet is " + str(self.sp.Packet))
         #send packet
@@ -109,6 +111,8 @@ class Window(QWidget):
         self.ground_timer.timeout.connect(self.check_for_ack)
         self.ground_timer.start(1000)
         self.ground_waiting_state = 1
+        self.ground_wait_time = time.time()
+        self.ground_console.append(f"Packet Sent: Now Waiting on Response")
         
     def check_for_ack(self):
         #Get the serial result from the ground station
@@ -117,9 +121,12 @@ class Window(QWidget):
         serial_val = 0
         hospital_msg = self.arduinoconn.readline() #read line on serial port 
         serial_val = int.from_bytes(hospital_msg, "big")
-        #print("message is " + str(hospital_msg))
-        #print("Serial val is " + str(serial_val))
-        #print(serial_val)
+
+        print("message is " + str(hospital_msg))
+        print("Serial val is " + str(serial_val))
+        print(serial_val)
+
+        '''
         if serial_val == 12554: #b'1\n' == int 12 554
             print("close serial")
             self.ground_waiting_state = 0
@@ -127,7 +134,10 @@ class Window(QWidget):
             #stop timer
             self.ground_timer.stop()
             del self.ground_timer
+            self.ground_console.append(f"Connection Made with Drone: Packet Sent")
             self.ground_timer = None
+        '''
+        self.hospital_console.append(f"Time Passed: {time.time() - self.ground_wait_time:.2f}")
 
 
     
