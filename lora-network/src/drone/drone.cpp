@@ -29,7 +29,7 @@ class Drone {
     int addOrder(uint8_t* order) {
         if (num_orders < MAX_ORDERS) {
             memcpy(orders_buf[num_orders], order, PACKET_SIZE);
-            orders_buf[num_orders][0] & 0x0F;  // clear station and packet type info
+            orders_buf[num_orders][0] &= 0x0F;  // clear station and packet type info
             num_orders++;
             return 1;
         } else {
@@ -38,7 +38,7 @@ class Drone {
     };
     int getOrder(uint8_t* order) {
         if (num_orders > 0) {
-            memcpy(order, orders_buf[num_orders], PACKET_SIZE);
+            memcpy(order, orders_buf[num_orders - 1], PACKET_SIZE);
             return 1;
         }
         else {
@@ -47,7 +47,7 @@ class Drone {
     };
     int popOrder() {
         if (num_orders > 0) {
-            memset(orders_buf[num_orders], 0, PACKET_SIZE);
+            memset(orders_buf[num_orders - 1], 0, PACKET_SIZE);
             num_orders--;
             return 1;
         }
@@ -251,7 +251,7 @@ void loop() {
                 ECE496::Utils::generateSecret();
                 ECE496::Utils::chacha.setKey(ECE496::Utils::sharedKey, KEY_SIZE);
                 ECE496::Utils::chacha.setIV(ECE496::Utils::IV, IV_SIZE);
-                NextState = ECE496::Drone::READY;
+                NextState = ECE496::Drone::UPLOAD;
             } else {
                 NextState = ECE496::Drone::WAIT;
             }
@@ -262,6 +262,7 @@ void loop() {
         // Sends an encypted payload packet to the hospital station
         case ECE496::Drone::UPLOAD: {
             if (Drone->getOrder(s_packet_buf)) {
+                ECE496::Utils::logHex("s_packet_buf: ", s_packet_buf, PACKET_SIZE);
                 ECE496::Utils::buildPacket(s_packet_buf, ECE496::Utils::PAYLOAD, PACKET_SIZE, s_packet_buf);
                 ECE496::Utils::sendPacket(s_packet_buf, PACKET_SIZE);
 
