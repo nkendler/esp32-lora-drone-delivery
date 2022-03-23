@@ -92,7 +92,7 @@ class SheetParser():
     def send(self):
         #note: port changes based on wire connected to computer...
         #on mac, run ls /dev/cu.* to find out which ports are connected
-        self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+        self.arduinoconn = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
 
         #split packet into bytes
         print(int(self.Packet))
@@ -106,6 +106,8 @@ class SheetParser():
             self.arduinoconn.write(byte)
             time.sleep(0.05)
 
+        #while(1):
+            #print("Waiting on Message Receipt")
         self.arduinoconn.close()
 
 class OrderReceiver():

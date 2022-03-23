@@ -13,6 +13,8 @@ class Window(QWidget):
 
         self.sp = SheetParser()
         self.ord = OrderReceiver()
+        self.arduinoconn = None
+        self.ground_waiting_state = 0
 
         self.setWindowTitle("Aerlift Network Application")
         self.windowHeight, self.windowWidth = 800, 1200
@@ -84,6 +86,25 @@ class Window(QWidget):
         if valid_check[0]:
             encoding = self.sp.encode_to_packet()
             self.ground_console.append(encoding)
+            #Might need to be some arguments
+            self.send()
+    
+    def send(self):
+        # Open connection and save it
+        # Set up a timer to listen to the device 
+        self.arduinoconn = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
+        self.ground_timer = QTimer()
+        self.ground_timer.timeout.connect(self.hospital_loop_action)
+        self.ground_timer.start(1000)
+        
+    def check_for_ack(self):
+        #Get the serial result from the ground station
+        #0 if ack has not been received
+        #1 if ack has been received
+        serial_val = 0
+        if serial_val == 1:
+            self.ground_waiting_state = 1
+
     
     def getfile(self):
         fname = QFileDialog.getOpenFileName(self, 'Open file', 
