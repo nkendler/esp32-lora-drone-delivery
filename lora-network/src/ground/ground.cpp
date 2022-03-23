@@ -109,6 +109,9 @@ void loop() {
                 }
 
                 ECE496::Utils::displayTextAndScroll("Received an order upload.");
+                //send a 0 to ground GUI to let them know to wait
+                Serial.print("0");
+                Serial.print("\n");
                 has_order = true;
             }
             if (has_order) {
@@ -212,6 +215,10 @@ void loop() {
         // Close session and clear all crypto-sensitive information from this device
         case ECE496::Ground::CLOSE: {
             ECE496::Utils::closeSession();
+            //send a 1 to ground GUI to let them know to close connection and
+            // ground station is free to receive a new order
+            Serial.print("1");
+            Serial.print("\n");
             NextState = ECE496::Ground::WAIT;
             break;
         }

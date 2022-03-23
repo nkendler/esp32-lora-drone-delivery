@@ -5,6 +5,8 @@ from processors import OrderReceiver, SheetParser
 from PyQt5.QtWidgets import (QApplication, QComboBox, QFileDialog, QLineEdit, QPushButton,
                              QStackedLayout, QVBoxLayout, QHBoxLayout, QWidget, QTextEdit)
 from PyQt5.QtCore import QTimer
+from serial import Serial
+import serial.tools.list_ports as ports
 
 
 class Window(QWidget):
@@ -91,19 +93,42 @@ class Window(QWidget):
     
     def send(self):
         # Open connection and save it
+        self.arduinoconn = Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+
+        print("packet is " + str(self.sp.Packet))
+        #send packet
+        byte_array = (int(self.sp.Packet)).to_bytes(5, byteorder = 'big')
+
+        for byte in byte_array:
+            self.arduinoconn.write(byte)
+            time.sleep(0.05)
+        print("packet sent")
+
         # Set up a timer to listen to the device 
-        self.arduinoconn = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
         self.ground_timer = QTimer()
-        self.ground_timer.timeout.connect(self.hospital_loop_action)
+        self.ground_timer.timeout.connect(self.check_for_ack)
         self.ground_timer.start(1000)
+        self.ground_waiting_state = 1
         
     def check_for_ack(self):
         #Get the serial result from the ground station
         #0 if ack has not been received
         #1 if ack has been received
         serial_val = 0
-        if serial_val == 1:
-            self.ground_waiting_state = 1
+        hospital_msg = self.arduinoconn.readline() #read line on serial port 
+        serial_val = int.from_bytes(hospital_msg, "big")
+        #print("message is " + str(hospital_msg))
+        #print("Serial val is " + str(serial_val))
+        #print(serial_val)
+        if serial_val == 12554: #b'1\n' == int 12 554
+            print("close serial")
+            self.ground_waiting_state = 0
+            self.arduinoconn.close()
+            #stop timer
+            self.ground_timer.stop()
+            del self.ground_timer
+            self.ground_timer = None
+
 
     
     def getfile(self):
