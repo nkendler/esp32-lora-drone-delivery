@@ -1,13 +1,12 @@
 import os
 import sys
-import time
+import time, serial
 from processors import OrderReceiver, SheetParser
 from PyQt5.QtWidgets import (QApplication, QComboBox, QFileDialog, QLineEdit, QPushButton,
                              QStackedLayout, QVBoxLayout, QHBoxLayout, QWidget, QTextEdit)
 from PyQt5.QtCore import QTimer
 from serial import Serial
 import serial.tools.list_ports as ports
-
 
 class Window(QWidget):
     def __init__(self):
@@ -93,23 +92,33 @@ class Window(QWidget):
     
     def send(self):
         # Open connection and save it
-        #self.arduinoconn = Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+        self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
         
-        self.arduinoconn = Serial(port='COM3', baudrate=115200, timeout=.1)
+        #self.arduinoconn = Serial(port='COM3', baudrate=115200, timeout=.1)
 
         print("packet is " + str(self.sp.Packet))
-        #send packet
-        byte_array = (int(self.sp.Packet)).to_bytes(5, byteorder = 'big')
+        
+        #split packet into bytes
+        int_array = []
+        packet_use = self.sp.Packet
 
-        for byte in byte_array:
-            self.arduinoconn.write(byte)
-            time.sleep(0.05)
-        print("packet sent")
+        while packet_use > 0:
+            int_array.append(packet_use & 0xff)
+            packet_use = packet_use >> 8
+
+        
+        #byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big', signed=False)
+        print("The bytes are : ", int_array)
+        #test: 02 80 45 18 44
+
+        #send packet        
+        self.arduinoconn.write(int_array)
+        print("bytes sent")
 
         # Set up a timer to listen to the device 
         self.ground_timer = QTimer()
         self.ground_timer.timeout.connect(self.check_for_ack)
-        self.ground_timer.start(1000)
+        self.ground_timer.start(500)
         self.ground_waiting_state = 1
         self.ground_wait_time = time.time()
         self.ground_console.append(f"Packet Sent: Now Waiting on Response")
@@ -122,12 +131,17 @@ class Window(QWidget):
         hospital_msg = self.arduinoconn.readline() #read line on serial port 
         serial_val = int.from_bytes(hospital_msg, "big")
 
-        print("message is " + str(hospital_msg))
-        print("Serial val is " + str(serial_val))
-        print(serial_val)
+        ser_msg_list = []
+        while serial_val != 0:
+            hospital_msg = self.arduinoconn.readline() #read line on serial port 
+            serial_val = int.from_bytes(hospital_msg, "big")
+            print("message is " + str(hospital_msg))
+            ser_msg_list.append(serial_val)
 
-        '''
-        if serial_val == 12554: #b'1\n' == int 12 554
+        #print("message is " + str(hospital_msg))
+        #print("Serial val is " + str(serial_val))
+        #print(serial_val)
+        if 12554 in ser_msg_list:
             print("close serial")
             self.ground_waiting_state = 0
             self.arduinoconn.close()
@@ -136,8 +150,8 @@ class Window(QWidget):
             del self.ground_timer
             self.ground_console.append(f"Connection Made with Drone: Packet Sent")
             self.ground_timer = None
-        '''
-        self.hospital_console.append(f"Time Passed: {time.time() - self.ground_wait_time:.2f}")
+        else:
+            self.ground_console.append(f"Time Passed: {time.time() - self.ground_wait_time:.2f}")
 
 
     
