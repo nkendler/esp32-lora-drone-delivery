@@ -93,7 +93,7 @@ class Window(QWidget):
     def send(self):
         # Open connection and save it
         self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
-        
+        #print(f"arduinoconn status is {self.arduinoconn.is_open}")
         #self.arduinoconn = Serial(port='COM3', baudrate=115200, timeout=.1)
 
         print("packet is " + str(self.sp.Packet))
@@ -145,6 +145,7 @@ class Window(QWidget):
             print("close serial")
             self.ground_waiting_state = 0
             self.arduinoconn.close()
+            #print(f"arduinoconn status is {self.arduinoconn.is_open}")
             #stop timer
             self.ground_timer.stop()
             del self.ground_timer
@@ -203,7 +204,7 @@ class Window(QWidget):
     
     def hospital_loop_action(self):
         self.hospital_console.append(f"Time Passed: {time.time() - self.hospital_start_time:.2f}")
-        df = self.ord.format_packet_into_df()
+        df = self.ord.format_packet_into_df() 
         if df is not None:
             self.hospital_console.append(f"\nPacket Recieved")
             for column in df.columns:

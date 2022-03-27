@@ -143,6 +143,45 @@ class OrderReceiver():
                 sample_packet = [0x02, 0x80, 0x45, 0x18, 0x44]
                 self.packet_list.append(sample_packet)
             #FINAL PACKET SHOULD BE 0x0280451844
+        else:
+            #open connection
+            #wait for "Sending packet to GUI" msg
+            #on next line, get num_orders
+            #then, for loop and get all the orders into a list in packet_list as byte rep of each packet
+            #close connection
+            self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-8', baudrate=115200, timeout=.1)
+            #self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+
+            hospital_msg = self.arduinoconn.readline() #read line on serial port
+            str_msg = hospital_msg.decode() 
+            #print(f"type of str_msg is {type(str_msg)} and type of hospital_msg is {type(hospital_msg)}")
+            str_msg = str_msg.strip('\n')
+
+            while str_msg !='Sending packet to GUI':
+                hospital_msg = self.arduinoconn.readline() #read line on serial port
+                str_msg = hospital_msg.decode() 
+                str_msg = str_msg.strip('\n')
+
+            #next msg is  order num 
+            hospital_msg = self.arduinoconn.readline() #read line on serial port
+            str_msg = hospital_msg.decode()
+            #str_msg = hospital_msg.strip('\n')
+            num_order = int(str_msg)
+
+            for i in range(num_order):
+                hospital_msg = self.arduinoconn.readline() #read line on serial port
+                str_msg = hospital_msg.decode()
+                print(f"str msg is {str_msg}")
+                #str_msg = hospital_msg.strip('\n')
+                #str_msg = hospital_msg.strip('\r')
+                order = int(str_msg, 16)
+                print(f"order in int form is {order}")
+                order_bytes = list(order.to_bytes(5, byteorder = 'little'))
+                order_bytes[4] = order_bytes[4] & 0xf #for some reason, it grabs another char to make the last byte 8 instead of 4 so slice those off
+                print(f"order in bytes is {order_bytes}")
+                self.packet_list.append(order_bytes)
+
+            self.arduinoconn.close()
         
     def export_dataframe(self, dataframe):
         order_name = self._get_order_name()
@@ -174,7 +213,7 @@ class OrderReceiver():
 
     def format_packet_into_df(self):
         df = None
-        self.get_packet_from_serial(debug=True)
+        self.get_packet_from_serial(debug=False)
         while len(self.packet_list) > 0:
             order_line = self.packet_list.pop(0)
             df_row = self.decode_order_line(order_line)

@@ -38,6 +38,31 @@ class Hospital {
         return 1;
     }
 
+    int getOrderNum() {
+        return num_order;
+    }
+
+    int getOrder(uint8_t* order) {
+        if (num_order > 0) {
+            memcpy(order, orders_buf[num_order - 1], PACKET_SIZE);
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    int popOrder() {
+        if (num_order > 0) {
+            memset(orders_buf[num_order - 1], 0, PACKET_SIZE);
+            num_order--;
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+
     enum State {
         WAIT = 0,
         EXCHANGE,
@@ -184,6 +209,19 @@ void loop() {
         case ECE496::Hospital::CLOSE: {
             ECE496::Utils::closeSession();
             NextState = ECE496::Hospital::WAIT;
+            Serial.print("Sending packet to GUI\n");
+            int num_orders = Hospital->getOrderNum();
+            Serial.print(num_orders);
+            Serial.print("\n");
+            for (i = 0; i < num_orders; i++) {
+                Hospital->getOrder(s_packet_buf);
+                Hospital->popOrder(); //remove from list
+                //print packet to serial
+                for (size_t i = 0; i < PACKET_SIZE; i++) {
+                    Serial.printf("%02x", *(s_packet_buf + i));
+                }
+                Serial.println();
+            }
             break;
         }
 
