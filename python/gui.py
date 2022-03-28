@@ -15,6 +15,7 @@ class Window(QWidget):
         self.sp = SheetParser()
         self.ord = OrderReceiver()
         self.arduinoconn = None
+        self.hospitalconn = None
         self.ground_waiting_state = 0
 
         self.setWindowTitle("Aerlift Network Application")
@@ -186,6 +187,7 @@ class Window(QWidget):
         return hospital_widget
 
     def end_hospital_loop(self):
+        self.hospitalconn.close()
         self.hospital_timer.stop()
         del self.hospital_timer
         self.hospital_console.append("Hospital Loop Ended")
@@ -194,6 +196,7 @@ class Window(QWidget):
         self.hospital_stop_button.setEnabled(False)
 
     def start_hospital_loop(self):
+        self.hospitalconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
         self.hospital_timer = QTimer()
         self.hospital_timer.timeout.connect(self.hospital_loop_action)
         self.hospital_timer.start(1000)
@@ -204,7 +207,7 @@ class Window(QWidget):
     
     def hospital_loop_action(self):
         self.hospital_console.append(f"Time Passed: {time.time() - self.hospital_start_time:.2f}")
-        df = self.ord.format_packet_into_df() 
+        df = self.ord.format_packet_into_df(self.hospitalconn) 
         if df is not None:
             self.hospital_console.append(f"\nPacket Recieved")
             for column in df.columns:

@@ -136,7 +136,7 @@ class OrderReceiver():
         order_name = datetime.now().strftime("droneorder_%Y%m%d%H%M%S.xlsx")
         return order_name
     
-    def get_packet_from_serial(self, debug=False):
+    def get_packet_from_serial(self, hospitalconn, debug=False):
 
         if debug:
             #Adding a packet every 5 seconds
@@ -155,31 +155,33 @@ class OrderReceiver():
             #on next line, get num_orders
             #then, for loop and get all the orders into a list in packet_list as byte rep of each packet
             #close connection
-            self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+            #self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
             #self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
             
             serial_val = 0
-            hospital_msg = self.arduinoconn.readline() #read line on serial port 
+            hospital_msg = hospitalconn.readline() #read line on serial port 
             serial_val = int.from_bytes(hospital_msg, "big")
+            #print(f"")
 
             ser_msg_list = []
             while serial_val != 0:
                 ser_msg_list.append(hospital_msg.decode().strip('\n'))
-                hospital_msg = self.arduinoconn.readline() #read line on serial port 
+                hospital_msg = hospitalconn.readline() #read line on serial port 
                 serial_val = int.from_bytes(hospital_msg, "big")
                 
                 
             if self.key_indicator in ser_msg_list:
                 key_index = ser_msg_list.index(self.key_indicator)
+                print(f"key index is {key_index}")
                 #If the msg is at the end of the list: read the number of lines we need
                 if key_index == (len(ser_msg_list) - 1):
                     #READLINE
-                    hospital_msg = self.arduinoconn.readline() #read line on serial port
+                    hospital_msg = hospitalconn.readline() #read line on serial port
                     str_msg = hospital_msg.decode()
                     #str_msg = hospital_msg.strip('\n')
                     num_order = int(str_msg)
                     for i in range(num_order):
-                        hospital_msg = self.arduinoconn.readline() #read line on serial port
+                        hospital_msg = hospitalconn.readline() #read line on serial port
                         str_msg = hospital_msg.decode()
                         print(f"str msg is {str_msg}")
                         #str_msg = hospital_msg.strip('\n')
@@ -205,7 +207,7 @@ class OrderReceiver():
                     
                     for i in range(0, num_order):
                         hospital_msg = ser_msg_list[key_index + 2 + i]
-                        order = int(str_msg, 16)
+                        order = int(hospital_msg, 16)
                         print(f"order in int form is {order}")
                         order_bytes = list(order.to_bytes(5, byteorder = 'little'))
                         order_bytes[4] = order_bytes[4] & 0xf #for some reason, it grabs another char to make the last byte 8 instead of 4 so slice those off
@@ -214,7 +216,7 @@ class OrderReceiver():
                     
                     if extra_reads > 0:
                         for i in range(extra_reads):
-                            hospital_msg = self.arduinoconn.readline() #read line on serial port
+                            hospital_msg = hospitalconn.readline() #read line on serial port
                             str_msg = hospital_msg.decode()
                             print(f"str msg is {str_msg}")
                             #str_msg = hospital_msg.strip('\n')
@@ -226,7 +228,7 @@ class OrderReceiver():
                             print(f"order in bytes is {order_bytes}")
                             self.packet_list.append(order_bytes)
                             
-            self.arduinoconn.close()
+            #self.arduinoconn.close()
         
     def export_dataframe(self, dataframe):
         order_name = self._get_order_name()
@@ -260,9 +262,9 @@ class OrderReceiver():
         
         return df_list
 
-    def format_packet_into_df(self):
+    def format_packet_into_df(self, hospitalconn):
         df = None
-        self.get_packet_from_serial(debug=False)
+        self.get_packet_from_serial(hospitalconn, debug=False)
         while len(self.packet_list) > 0:
             order_line = self.packet_list.pop(0)
             df_row = self.decode_order_line(order_line)
