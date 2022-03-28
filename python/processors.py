@@ -109,6 +109,7 @@ class SheetParser():
         #while(1):
             #print("Waiting on Message Receipt")
         self.arduinoconn.close()
+        
 
 class OrderReceiver():
     """
@@ -138,11 +139,15 @@ class OrderReceiver():
 
         if debug:
             #Adding a packet every 5 seconds
-            current_time = time.time()
-            if int(current_time - self.init_time) % 5 == 0:
-                sample_packet = [0x02, 0x80, 0x45, 0x18, 0x44]
-                self.packet_list.append(sample_packet)
+            #current_time = time.time()
+            #if int(current_time - self.init_time) % 5 == 0:
+                #sample_packet = [0x02, 0x80, 0x45, 0x18, 0x44]
+                #self.packet_list.append(sample_packet)
             #FINAL PACKET SHOULD BE 0x0280451844
+            sample_packet = [137, 48, 138, 0, 5]
+            self.packet_list.append(sample_packet)
+            sample_packet = [0x33, 0xab, 0x4a, 0x98, 0xc]
+            self.packet_list.append(sample_packet)
         else:
             #open connection
             #wait for "Sending packet to GUI" msg
@@ -190,15 +195,19 @@ class OrderReceiver():
         return excel_path
 
     def decode_order_line(self, order_line):
-        #print(len(order_line))
-        for i, byter_manz in enumerate(order_line):
-            new_shift = (byter_manz) << (8 * (len(order_line) -i - 1))
-            if i == 0:
-                new_value = new_shift
-            else:
-                new_value = new_value | new_shift    
         
+        # Reconstructing the order 
+        new_order_line = order_line
+        new_order_line.reverse()
+        new_value = 0
+        for i, byter_manz in enumerate(new_order_line):
+            order_val = byter_manz << (8 * (len(new_order_line) - 1 - i))
+            new_value += order_val
+        
+        # Taking away the district hospital from the equation
+        new_value = new_value >> 1    
         order = new_value
+        
 
         df_list = []
         for i in range(0, 7):
