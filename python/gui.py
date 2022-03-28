@@ -92,7 +92,7 @@ class Window(QWidget):
     
     def send(self):
         # Open connection and save it
-        self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+        self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-9', baudrate=115200, timeout=.1)
         #print(f"arduinoconn status is {self.arduinoconn.is_open}")
         #self.arduinoconn = Serial(port='COM3', baudrate=115200, timeout=.1)
 

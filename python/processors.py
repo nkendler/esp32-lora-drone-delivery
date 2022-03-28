@@ -154,7 +154,7 @@ class OrderReceiver():
             #on next line, get num_orders
             #then, for loop and get all the orders into a list in packet_list as byte rep of each packet
             #close connection
-            self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-8', baudrate=115200, timeout=.1)
+            self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
             #self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
 
             hospital_msg = self.arduinoconn.readline() #read line on serial port
