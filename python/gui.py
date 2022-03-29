@@ -93,7 +93,8 @@ class Window(QWidget):
     
     def send(self):
         # Open connection and save it
-        self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-9', baudrate=115200, timeout=.1)
+        #ground station serial connection
+        self.arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
         #print(f"arduinoconn status is {self.arduinoconn.is_open}")
         #self.arduinoconn = Serial(port='COM3', baudrate=115200, timeout=.1)
 
@@ -107,6 +108,13 @@ class Window(QWidget):
             int_array.append(packet_use & 0xff)
             packet_use = packet_use >> 8
 
+        #if packet is <5 bytes, need to pad w 0 bytes
+        num_bytes = len(int_array)
+
+        if num_bytes < 5:
+            to_pad = 5 - num_bytes
+            for i in range(to_pad):
+                int_array.append(0)
         
         #byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big', signed=False)
         print("The bytes are : ", int_array)
@@ -196,7 +204,8 @@ class Window(QWidget):
         self.hospital_stop_button.setEnabled(False)
 
     def start_hospital_loop(self):
-        self.hospitalconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
+        #ground station serial connection
+        self.hospitalconn = serial.Serial(port='/dev/cu.usbserial-10', baudrate=115200, timeout=.1)
         self.hospital_timer = QTimer()
         self.hospital_timer.timeout.connect(self.hospital_loop_action)
         self.hospital_timer.start(1000)
