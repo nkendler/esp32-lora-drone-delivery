@@ -37,6 +37,16 @@ class SheetParser():
             return f"{self.sheet_df}"
         else:
             return "NO SPREADSHEET LOADED"
+    
+    def set_data(self, datasheet):
+        self.DistrictHospital = datasheet["District Hospital"][0]
+        self.RuralStation = datasheet["Rural Station"][0]
+        self.ItemOne = datasheet["Quantity for Item 1"][0]
+        self.ItemTwo = datasheet["Quantity for Item 2"][0]
+        self.ItemThree = datasheet["Quantity for Item 3"][0]
+        self.ItemFour = datasheet["Quantity for Item 4"][0]
+        self.ItemFive = datasheet["Quantity for Item 5"][0]
+        self.ItemSix = datasheet["Quantity for Item 6"][0]
 
     def parse_data(self):
         self.DistrictHospital = self.sheet_df["District Hospital"][0]
