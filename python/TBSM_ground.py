@@ -9,12 +9,6 @@ from processors import OrderReceiver, SheetParser
 import pandas as pd
 
 def send(sheet_parser, arduinoconn):
-    # Open connection and save it
-    #ground station serial connection
-    #arduinoconn = serial.Serial(port='/dev/cu.usbserial-0001', baudrate=115200, timeout=.1)
-    #print(f"arduinoconn status is {self.arduinoconn.is_open}")
-    #self.arduinoconn = Serial(port='COM3', baudrate=115200, timeout=.1)
-
     print("packet is " + str(sheet_parser.Packet))
     
     #split packet into bytes
@@ -35,11 +29,12 @@ def send(sheet_parser, arduinoconn):
     
     #byte_array = (int(self.Packet)).to_bytes(5, byteorder = 'big', signed=False)
     print("The bytes are : ", int_array)
-    #test: 02 80 45 18 44
 
     #send packet        
     arduinoconn.write(int_array)
     print("bytes sent")
+
+    #wait for acknowledgment from the drone
     print("waiting for ack from the drone")
     val = check_for_ack(arduinoconn=arduinoconn, timeout=30)
     if val:
@@ -53,6 +48,7 @@ def check_for_ack(arduinoconn, timeout):
     #Get the serial result from the ground station
     #0 if ack has not been received
     #1 if ack has been received
+    #fully wait for a response via the while loop
     hospital_msg = arduinoconn.readline() #read line on serial port 
     serial_val = int.from_bytes(hospital_msg, "big")
     start_time = time.time()
@@ -63,6 +59,7 @@ def check_for_ack(arduinoconn, timeout):
         if (time.time() - start_time > timeout):
             return 0
     return 1
+    
 def TBSM_ground_start(length=1):
     time_to_check = length * (60*60)
     gen_freq = 5 * 4 # * 60
