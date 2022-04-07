@@ -340,10 +340,10 @@ void loop() {
 
     // move to the next state
     if (DEBUG) {
-        delay(100);
-        if (State != NextState) {
-            ECE496::Drone::printState(NextState);
-        }
+        delay(10);
+    }
+    if (State != NextState) {
+        ECE496::Drone::printState(NextState);
     }
     State = NextState;
 }

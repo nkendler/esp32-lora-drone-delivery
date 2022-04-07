@@ -15,7 +15,7 @@
 #define PACKET_SIZE 5
 #define MAX_ORDERS 5
 #define PACKET_WAIT_TIME 5000
-#define INTER_HELLO_TIME 10000
+#define INTER_HELLO_TIME 30000
 
 namespace ECE496 {
 class Hospital {
@@ -238,10 +238,10 @@ void loop() {
 
     // move to the next state
     if (DEBUG) {
-        delay(100);
+        delay(10);
+    }
         if (State != NextState) {
             ECE496::Hospital::printState(NextState);
         }
-    }
     State = NextState;
 }

@@ -15,6 +15,7 @@
 
 #define PACKET_SIZE 5
 #define PACKET_WAIT_TIME 5000
+#define INTER_HELLO_TIME 30000
 
 namespace ECE496 {
 class Ground {
@@ -133,6 +134,8 @@ void loop() {
         // Advertise a connection to drones by saying HELLO
         case ECE496::Ground::ADVERTISE: {
             uint8_t hello_buffer[PACKET_SIZE];
+            
+            delay(INTER_HELLO_TIME);
             ECE496::Utils::buildPacket(hello_buffer, ECE496::Utils::HELLO, PACKET_SIZE, NULL);
             ECE496::Utils::sendUnencryptedPacket(hello_buffer, PACKET_SIZE);
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
@@ -250,10 +253,10 @@ void loop() {
 
     // move to the next state
     if (DEBUG) {
-        delay(100);
-        if (State != NextState) {
-            ECE496::Ground::printState(NextState);
-        }
+        delay(10);
+    }
+    if (State != NextState) {
+        ECE496::Ground::printState(NextState);
     }
     State = NextState;
 }
