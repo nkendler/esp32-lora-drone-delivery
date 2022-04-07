@@ -58,6 +58,7 @@ class Utils {
     static void generateIV();
     static void generateSecret();
     static void closeSession();
+    static void decrypt(uint8_t* input, size_t size);
 
     static uint8_t publicKey[KEY_SIZE];
     static uint8_t privateKey[KEY_SIZE];
@@ -69,7 +70,6 @@ class Utils {
    private:
     static void allocateEntropy(size_t size);
     static void encrypt(uint8_t* input, size_t size);
-    static void decrypt(uint8_t* input, size_t size);
 
     static unsigned int screenLines;
 };

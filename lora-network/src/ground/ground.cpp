@@ -195,16 +195,22 @@ void loop() {
         case ECE496::Ground::RECEIVE: {
             // wait for a response
             if (ECE496::Utils::awaitPacketUntil(PACKET_WAIT_TIME)) {
-                ECE496::Utils::receivePacket(r_packet_buf, PACKET_SIZE);
-
-                // make sure packet is from a drone station
-                if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
-                    // found a drone station
-                    ECE496::Utils::displayTextAndScroll("Got ACK from drone.");
-                    NextState = ECE496::Ground::CLEAR;
-                } else {
-                    Serial.print("Received ill-formed packet.");
-                    NextState = ECE496::Ground::CLOSE;
+                ECE496::Utils::receiveUnencryptedPacket(r_packet_buf, PACKET_SIZE);
+                
+                if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::HOSPITAL && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::HELLO) {
+                    NextState = ECE496::Ground::RECEIVE;
+                }
+                else {    
+                    ECE496::Utils::decrypt(r_packet_buf,PACKET_SIZE);
+                    // make sure packet is from a drone station
+                    if (ECE496::Utils::getPacketStationType(r_packet_buf) == ECE496::Utils::DRONE && ECE496::Utils::getPacketType(r_packet_buf) == ECE496::Utils::ACK) {
+                        // found a drone station
+                        ECE496::Utils::displayTextAndScroll("Got ACK from drone.");
+                        NextState = ECE496::Ground::CLEAR;
+                    } else {
+                        Serial.print("Received ill-formed packet.");
+                        NextState = ECE496::Ground::CLOSE;
+                    }
                 }
             } else {
                 NextState = ECE496::Ground::CLOSE;
