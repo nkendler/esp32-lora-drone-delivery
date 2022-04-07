@@ -55,7 +55,7 @@ class Ground {
                 ECE496::Utils::displayTextAndScroll("SEND");
                 break;
             case RECEIVE:
-                ECE496::Utils::displayTextAndScroll("CLOSE");
+                ECE496::Utils::displayTextAndScroll("RECEIVE");
                 break;
             case CLOSE:
                 ECE496::Utils::displayTextAndScroll("CLOSE");
